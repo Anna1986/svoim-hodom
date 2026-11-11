@@ -30,6 +30,7 @@ export type Category =
 export interface CategoryConfig {
   label: string // название папки
   one: string // одна запись
+  add: string // для кнопки «Добавить …» (винительный падеж)
   icon: string
   start: string // подпись начала (Вылет, Заселение…)
   end: string // подпись окончания ('' — нет)
@@ -43,55 +44,55 @@ export interface CategoryConfig {
 
 export const CATEGORIES: Record<Category, CategoryConfig> = {
   flight: {
-    label: 'Авиабилеты', one: 'Авиабилет', icon: '✈️',
+    label: 'Авиабилеты', one: 'Авиабилет', add: 'авиабилет', icon: '✈️',
     start: 'Вылет', end: 'Прилёт', place: 'Откуда', placeTo: 'Куда',
     ref: 'Номер брони (PNR)', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, SU 2130 Москва — Стамбул',
   },
   transport: {
-    label: 'Поезда и автобусы', one: 'Билет', icon: '🚆',
+    label: 'Поезда и автобусы', one: 'Билет', add: 'билет', icon: '🚆',
     start: 'Отправление', end: 'Прибытие', place: 'Откуда', placeTo: 'Куда',
     ref: 'Номер билета', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, Поезд Рим — Флоренция',
   },
   hotel: {
-    label: 'Жильё', one: 'Бронь жилья', icon: '🏨',
+    label: 'Жильё', one: 'Бронь жилья', add: 'бронь жилья', icon: '🏨',
     start: 'Заселение', end: 'Выезд', place: 'Адрес', placeTo: '',
     ref: 'Номер брони', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, Hotel Roma Centro',
   },
   car: {
-    label: 'Аренда авто', one: 'Аренда авто', icon: '🚗',
+    label: 'Аренда авто', one: 'Аренда авто', add: 'аренду авто', icon: '🚗',
     start: 'Получение', end: 'Возврат', place: 'Где получить', placeTo: 'Где вернуть',
     ref: 'Номер брони', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, Sixt, Toyota Corolla',
   },
   voucher: {
-    label: 'Экскурсии и билеты', one: 'Ваучер', icon: '🎟️',
+    label: 'Экскурсии и билеты', one: 'Событие', add: 'событие', icon: '🎟️',
     start: 'Начало', end: 'Окончание', place: 'Место встречи', placeTo: '',
-    ref: 'Номер ваучера', withTime: true, inPlan: true,
+    ref: 'Номер билета или ваучера', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, Экскурсия в Ватикан',
   },
   visa: {
-    label: 'Визы', one: 'Виза', icon: '🛂',
+    label: 'Визы', one: 'Виза', add: 'визу', icon: '🛂',
     start: 'Действует с', end: 'Действует до', place: '', placeTo: '',
     ref: 'Номер визы', withTime: false, inPlan: false,
     titlePlaceholder: 'Например, Шенгенская виза',
   },
   insurance: {
-    label: 'Страховки', one: 'Страховка', icon: '🛡️',
+    label: 'Страховки', one: 'Страховка', add: 'страховку', icon: '🛡️',
     start: 'Действует с', end: 'Действует до', place: '', placeTo: '',
     ref: 'Номер полиса', withTime: false, inPlan: false,
     titlePlaceholder: 'Например, Страховка на поездку',
   },
   route: {
-    label: 'Маршруты', one: 'Маршрут', icon: '🗺️',
+    label: 'Маршруты', one: 'Маршрут', add: 'маршрут', icon: '🗺️',
     start: 'Дата', end: '', place: '', placeTo: '',
     ref: '', withTime: false, inPlan: true,
     titlePlaceholder: 'Например, Прогулка по центру',
   },
   other: {
-    label: 'Другое', one: 'Запись', icon: '📎',
+    label: 'Другое', one: 'Запись', add: 'запись', icon: '📎',
     start: 'Дата', end: 'Дата окончания', place: 'Место', placeTo: '',
     ref: 'Номер', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, Столик в ресторане',

@@ -199,7 +199,7 @@ export default function TripView() {
               <p className="muted">Пока пусто.</p>
             )
           })()}
-          <Link to={addLink} className="btn btn-soft add-inline">+ Добавить: {CATEGORIES[folder].one.toLowerCase()}</Link>
+          <Link to={addLink} className="btn btn-soft add-inline">+ Добавить {CATEGORIES[folder].add}</Link>
         </section>
       )}
 

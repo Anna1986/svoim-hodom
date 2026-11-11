@@ -17,6 +17,8 @@ export function ShareSheet({ tripId, title, onClose }: { tripId: string; title: 
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
+  const [confirming, setConfirming] = useState<string | null>(null)
+  const [linkErr, setLinkErr] = useState<{ token: string; text: string } | null>(null)
 
   useEffect(() => {
     if (!sync.user) return
@@ -42,9 +44,18 @@ export function ShareSheet({ tripId, title, onClose }: { tripId: string; title: 
     try { await navigator.clipboard.writeText(shareUrl(token)); setMsg('Ссылка скопирована.') } catch { setErr('Не получилось скопировать') }
   }
 
+  // Без системного окна подтверждения: второе нажатие на «Точно отозвать?»
   async function revoke(token: string) {
-    if (!window.confirm('Отозвать ссылку? Тот, у кого она есть, больше не сможет открыть поездку.')) return
-    try { await revokeShare(token); setLinks(await listShares(tripId)) } catch (e) { setErr((e as Error).message) }
+    setLinkErr(null)
+    if (confirming !== token) { setConfirming(token); return }
+    setConfirming(null)
+    try {
+      await revokeShare(token)
+      setLinks((l) => (l ?? []).filter((x) => x.token !== token))
+      setMsg('Ссылка отозвана — по ней поездка больше не откроется.')
+    } catch (e) {
+      setLinkErr({ token, text: (e as Error).message })
+    }
   }
 
   return (
@@ -93,8 +104,11 @@ export function ShareSheet({ tripId, title, onClose }: { tripId: string; title: 
                     <div className="share-link-actions">
                       <button className="link-btn" onClick={() => sendLink(shareUrl(l.token), title)}>Отправить</button>
                       <button className="link-btn" onClick={() => copy(l.token)}>Копировать</button>
-                      <button className="link-btn danger" onClick={() => revoke(l.token)}>Отозвать</button>
+                      <button className="link-btn danger" onClick={() => revoke(l.token)}>
+                        {confirming === l.token ? 'Точно отозвать?' : 'Отозвать'}
+                      </button>
                     </div>
+                    {linkErr?.token === l.token && <div className="error share-link-err">{linkErr.text}</div>}
                   </div>
                 ))}
               </div>

@@ -569,3 +569,5 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .shared-details .details { box-shadow: none !important; padding: 8px 0; margin: 0 0 8px; }
 .shared-event { width: 100%; border: none; font: inherit; text-align: left; cursor: pointer; color: var(--text); }
 .shared-footer { text-align: center; margin-top: 30px; }
+.share-link { flex-wrap: wrap; }
+.share-link-err { width: 100%; }

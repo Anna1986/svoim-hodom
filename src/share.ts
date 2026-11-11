@@ -49,8 +49,15 @@ export async function listShares(tripId: string): Promise<ShareLink[]> {
 }
 
 export async function revokeShare(token: string) {
-  const { error } = await supabase.from('shares').update({ revoked_at: new Date().toISOString() }).eq('token', token)
-  if (error) throw new Error(error.message)
+  // Обновляем сессию, если телефон долго был в фоне и токен входа истёк
+  await supabase.auth.getSession()
+  const { data, error } = await supabase
+    .from('shares')
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('token', token)
+    .select('token')
+  if (error) throw new Error(navigator.onLine ? error.message : 'Нужен интернет, чтобы отозвать ссылку')
+  if (!data?.length) throw new Error('Не получилось отозвать ссылку. Попробуйте ещё раз.')
 }
 
 export async function fetchShared(token: string): Promise<SharedTrip | null> {

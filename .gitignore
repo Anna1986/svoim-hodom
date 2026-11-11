@@ -28,3 +28,4 @@ build/
 # Логи и БД для разработки
 *.log
 *.sqlite3
+*.tsbuildinfo

@@ -22,5 +22,6 @@ function serviceWorker(): Plugin {
 // base: './' — относительные пути, чтобы сайт работал на GitHub Pages по адресу /SUP/
 export default defineConfig({
   plugins: [react(), serviceWorker()],
+  define: { __BUILD_TIME__: JSON.stringify(new Date().toISOString()) },
   base: './',
 })

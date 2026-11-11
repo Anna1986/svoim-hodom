@@ -86,6 +86,7 @@ export default function Settings() {
         <p className="muted"><b>iPhone:</b> откройте сайт в Safari → «Поделиться» → «На экран „Домой“».</p>
         <p className="muted"><b>Android:</b> откройте в Chrome → меню ⋮ → «Добавить на главный экран».</p>
       </section>
+      <p className="muted small version">Версия приложения: {new Date(__BUILD_TIME__).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</p>
     </>
   )
 }

@@ -1,0 +1,186 @@
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
+import { formatDay, formatRange, formatShort, todayISO } from '../format'
+import { buildPlan, passportWarnings, tripCountdown, tripPhase } from '../trip'
+import { Empty, Fab, PageHeader } from '../components/ui'
+
+function placeLine(item: Item): string {
+  if (item.place && item.placeTo) return `${item.place} → ${item.placeTo}`
+  return item.place || item.placeTo
+}
+
+function ItemRow({ item, fileCount }: { item: Item; fileCount: number }) {
+  const cfg = CATEGORIES[item.category]
+  const when = item.startDate
+    ? `${formatShort(item.startDate)}${item.startTime ? ' ' + item.startTime : ''}` +
+      (item.endDate && item.endDate !== item.startDate ? ` — ${formatShort(item.endDate)}` : '')
+    : ''
+  return (
+    <Link to={`/items/${item.id}`} className="row">
+      <span className="row-icon">{cfg.icon}</span>
+      <span className="row-body">
+        <span className="row-title">{item.title}</span>
+        {placeLine(item) && <span className="row-sub">{placeLine(item)}</span>}
+        {when && <span className="row-sub">{when}</span>}
+      </span>
+      {fileCount > 0 && <span className="row-files">📎{fileCount}</span>}
+    </Link>
+  )
+}
+
+export default function TripView() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'folders' || params.get('folder') ? 'folders' : 'plan'
+  const folder = params.get('folder') as Category | null
+
+  const trip = useLiveQuery(async () => (await db.trips.get(id!)) ?? null, [id])
+  const items = useLiveQuery(() => db.items.where('tripId').equals(id!).toArray(), [id])
+  const fileCounts = useLiveQuery(async () => {
+    const ids = (await db.items.where('tripId').equals(id!).primaryKeys()) as string[]
+    const counts: Record<string, number> = {}
+    if (ids.length) {
+      await db.attachments.where('ownerId').anyOf(ids).each((a) => { counts[a.ownerId] = (counts[a.ownerId] ?? 0) + 1 })
+    }
+    return counts
+  }, [id])
+  const docs = useLiveQuery(() => db.docs.toArray(), [])
+
+  if (trip === undefined || !items || !fileCounts || !docs) return null
+  if (trip === null) {
+    return <Empty icon="🤷"><p>Поездка не найдена.</p><Link to="/trips" className="btn">К поездкам</Link></Empty>
+  }
+
+  const countdown = tripCountdown(trip)
+  const warnings = tripPhase(trip) !== 'past' ? passportWarnings(trip, docs) : []
+  const { byDay, undated } = buildPlan(items)
+  const today = todayISO()
+  const nextKey = byDay.flatMap(([, ev]) => ev).find((e) => e.date >= today)?.key
+
+  async function remove() {
+    if (!window.confirm(`Удалить поездку «${trip!.title}» вместе со всеми бронями и файлами?`)) return
+    await deleteTrip(trip!.id)
+    navigate('/trips', { replace: true })
+  }
+
+  const addLink = folder ? `/trips/${trip.id}/items/new?category=${folder}` : `/trips/${trip.id}/add`
+
+  return (
+    <>
+      <PageHeader title={trip.title} back="/trips" backLabel="← Поездки" />
+
+      <div className="trip-head">
+        {trip.destination && <div>📍 {trip.destination}</div>}
+        {(trip.startDate || trip.endDate) && <div>🗓 {formatRange(trip.startDate, trip.endDate)}</div>}
+        {countdown && <span className={`pill pill-${tripPhase(trip)}`}>{countdown}</span>}
+      </div>
+
+      {warnings.map((w, i) => <div key={i} className="warning">⚠️ {w}</div>)}
+
+      <div className="tabs" role="tablist">
+        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>План по дням</button>
+        <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'folders' }, { replace: true })}>Папки</button>
+      </div>
+
+      {tab === 'plan' && (
+        items.length === 0 ? (
+          <Empty icon="🗺️">
+            <p>Добавьте билеты, жильё и экскурсии — план по дням соберётся сам.</p>
+            <Link to={`/trips/${trip.id}/add`} className="btn btn-primary">Добавить бронь</Link>
+          </Empty>
+        ) : (
+          <div className="plan">
+            {byDay.map(([date, events]) => (
+              <section key={date} className={`day ${date < today ? 'day-past' : ''} ${date === today ? 'day-today' : ''}`}>
+                <h3 className="day-title">
+                  {formatDay(date)}
+                  {date === today && <span className="pill pill-current">сегодня</span>}
+                </h3>
+                <ul className="events">
+                  {events.map((e) => {
+                    const cfg = CATEGORIES[e.item.category]
+                    return (
+                      <li key={e.key}>
+                        <Link to={`/items/${e.item.id}`} className={`event ${e.key === nextKey ? 'event-next' : ''}`}>
+                          <span className="event-time">
+                            {e.time || '—'}
+                            {e.timeEnd && <small>{e.timeEnd}</small>}
+                          </span>
+                          <span className="event-icon">{cfg.icon}</span>
+                          <span className="event-body">
+                            {e.label && <span className="event-label">{e.label}</span>}
+                            <span className="event-title">{e.item.title}</span>
+                            {placeLine(e.item) && <span className="row-sub">{placeLine(e.item)}</span>}
+                          </span>
+                          {fileCounts[e.item.id] > 0 && <span className="row-files">📎</span>}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            ))}
+            {undated.length > 0 && (
+              <section className="day">
+                <h3 className="day-title">Без даты</h3>
+                <div className="rows">{undated.map((it) => <ItemRow key={it.id} item={it} fileCount={fileCounts[it.id] ?? 0} />)}</div>
+              </section>
+            )}
+            {items.some((i) => !CATEGORIES[i.category].inPlan) && (
+              <p className="muted small">Визы и страховки — во вкладке «Папки».</p>
+            )}
+          </div>
+        )
+      )}
+
+      {tab === 'folders' && !folder && (
+        <div className="folders">
+          {CATEGORY_ORDER.map((c) => {
+            const n = items.filter((i) => i.category === c).length
+            return (
+              <button key={c} className={`folder ${n === 0 ? 'folder-empty' : ''}`} onClick={() => setParams({ folder: c })}>
+                <span className="folder-icon">{CATEGORIES[c].icon}</span>
+                <span className="folder-label">{CATEGORIES[c].label}</span>
+                <span className="folder-count">{n}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {tab === 'folders' && folder && CATEGORIES[folder] && (
+        <section>
+          <button className="back back-btn" onClick={() => setParams({ tab: 'folders' }, { replace: true })}>← Все папки</button>
+          <h2 className="folder-heading">{CATEGORIES[folder].icon} {CATEGORIES[folder].label}</h2>
+          {(() => {
+            const list = items
+              .filter((i) => i.category === folder)
+              .sort((a, b) => (a.startDate + a.startTime || '9').localeCompare(b.startDate + b.startTime || '9'))
+            return list.length ? (
+              <div className="rows">{list.map((it) => <ItemRow key={it.id} item={it} fileCount={fileCounts[it.id] ?? 0} />)}</div>
+            ) : (
+              <p className="muted">Пока пусто.</p>
+            )
+          })()}
+          <Link to={addLink} className="btn btn-soft add-inline">+ Добавить: {CATEGORIES[folder].one.toLowerCase()}</Link>
+        </section>
+      )}
+
+      {trip.notes && (
+        <section className="section notes-section">
+          <h2>Заметки</h2>
+          <p className="description">{trip.notes}</p>
+        </section>
+      )}
+
+      <div className="form-actions page-actions">
+        <Link to={`/trips/${trip.id}/edit`} className="btn">Изменить</Link>
+        <button className="btn btn-danger" onClick={remove}>Удалить</button>
+      </div>
+
+      <Fab to={addLink} label="Добавить" />
+    </>
+  )
+}

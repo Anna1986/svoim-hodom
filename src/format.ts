@@ -5,24 +5,46 @@ export function todayISO(): string {
   return `${d.getFullYear()}-${m}-${day}`
 }
 
-export function formatDate(iso: string): string {
-  if (!iso) return ''
+function parse(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
+  return new Date(y, m - 1, d)
 }
 
-/** Сколько дней до даты (отрицательное — просрочено). */
+export function formatDate(iso: string): string {
+  if (!iso) return ''
+  return parse(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+export function formatShort(iso: string): string {
+  if (!iso) return ''
+  return parse(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+}
+
+export function formatDay(iso: string): string {
+  const s = parse(iso).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+export function formatRange(start: string, end: string): string {
+  if (start && end && start !== end) return `${formatShort(start)} — ${formatDate(end)}`
+  return formatDate(start || end)
+}
+
+export function formatDateTime(date: string, time: string): string {
+  if (!date) return time
+  return time ? `${formatDate(date)}, ${time}` : formatDate(date)
+}
+
+/** Сколько дней от сегодня до даты (отрицательное — в прошлом). */
 export function daysUntil(iso: string): number | null {
   if (!iso) return null
-  const [y, m, d] = iso.split('-').map(Number)
-  const target = new Date(y, m - 1, d).getTime()
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  return Math.round((target - today) / 86_400_000)
+  return Math.round((parse(iso).getTime() - today) / 86_400_000)
+}
+
+export function daysBetween(a: string, b: string): number {
+  return Math.round((parse(b).getTime() - parse(a).getTime()) / 86_400_000)
 }
 
 export function plural(n: number, one: string, few: string, many: string): string {
@@ -34,11 +56,10 @@ export function plural(n: number, one: string, few: string, many: string): strin
   return many
 }
 
-export function deadlineHint(iso: string): { text: string; tone: 'ok' | 'soon' | 'late' } | null {
-  const n = daysUntil(iso)
-  if (n === null) return null
-  if (n < 0) return { text: `просрочен на ${-n} ${plural(-n, 'день', 'дня', 'дней')}`, tone: 'late' }
-  if (n === 0) return { text: 'срок сегодня', tone: 'soon' }
-  if (n <= 7) return { text: `через ${n} ${plural(n, 'день', 'дня', 'дней')}`, tone: 'soon' }
-  return { text: `через ${n} ${plural(n, 'день', 'дня', 'дней')}`, tone: 'ok' }
+export const days = (n: number) => `${n} ${plural(n, 'день', 'дня', 'дней')}`
+
+export function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`
+  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`
 }

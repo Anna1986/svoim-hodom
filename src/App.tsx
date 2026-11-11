@@ -1,23 +1,34 @@
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import ProjectsList from './pages/ProjectsList'
-import ProjectView from './pages/ProjectView'
-import ProjectForm from './pages/ProjectForm'
-import Placeholder from './pages/Placeholder'
+import { useEffect } from 'react'
+import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import TripsList from './pages/TripsList'
+import TripForm from './pages/TripForm'
+import TripView from './pages/TripView'
+import AddItem from './pages/AddItem'
+import ItemForm from './pages/ItemForm'
+import ItemView from './pages/ItemView'
+import { DocForm, DocsList, DocView } from './pages/Docs'
+import Settings from './pages/Settings'
 
 const NAV = [
-  { to: '/projects', label: 'Проекты', icon: '📁' },
-  { to: '/tasks', label: 'Задачи', icon: '✅' },
-  { to: '/contacts', label: 'Контакты', icon: '👥' },
-  { to: '/dashboard', label: 'Сводка', icon: '📊' },
+  { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', icon: '🧳' },
+  { to: '/docs', match: ['/docs'], label: 'Документы', icon: '🛂' },
+  { to: '/settings', match: ['/settings'], label: 'Настройки', icon: '⚙️' },
 ]
 
 export default function App() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+
   return (
     <div className="app">
       <nav className="nav">
-        <div className="nav-brand">СУП</div>
+        <div className="nav-brand">🧳 Путешествия</div>
         {NAV.map((n) => (
-          <NavLink key={n.to} to={n.to} className="nav-item">
+          <NavLink
+            key={n.to}
+            to={n.to}
+            className={() => `nav-item ${n.match.some((m) => pathname.startsWith(m)) ? 'active' : ''}`}
+          >
             <span className="nav-icon" aria-hidden>{n.icon}</span>
             <span className="nav-label">{n.label}</span>
           </NavLink>
@@ -25,15 +36,21 @@ export default function App() {
       </nav>
       <main className="main">
         <Routes>
-          <Route path="/" element={<Navigate to="/projects" replace />} />
-          <Route path="/projects" element={<ProjectsList />} />
-          <Route path="/projects/new" element={<ProjectForm />} />
-          <Route path="/projects/:id" element={<ProjectView />} />
-          <Route path="/projects/:id/edit" element={<ProjectForm />} />
-          <Route path="/tasks" element={<Placeholder title="Задачи" text="Канбан-доска и список задач появятся на следующем шаге." />} />
-          <Route path="/contacts" element={<Placeholder title="Контакты" text="Здесь будут исполнители и заказчики." />} />
-          <Route path="/dashboard" element={<Placeholder title="Сводка" text="Прогресс по проектам и просроченные задачи — скоро." />} />
-          <Route path="*" element={<Navigate to="/projects" replace />} />
+          <Route path="/" element={<Navigate to="/trips" replace />} />
+          <Route path="/trips" element={<TripsList />} />
+          <Route path="/trips/new" element={<TripForm />} />
+          <Route path="/trips/:id" element={<TripView />} />
+          <Route path="/trips/:id/edit" element={<TripForm />} />
+          <Route path="/trips/:id/add" element={<AddItem />} />
+          <Route path="/trips/:id/items/new" element={<ItemForm />} />
+          <Route path="/items/:itemId" element={<ItemView />} />
+          <Route path="/items/:itemId/edit" element={<ItemForm />} />
+          <Route path="/docs" element={<DocsList />} />
+          <Route path="/docs/new" element={<DocForm />} />
+          <Route path="/docs/:id" element={<DocView />} />
+          <Route path="/docs/:id/edit" element={<DocForm />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/trips" replace />} />
         </Routes>
       </main>
     </div>

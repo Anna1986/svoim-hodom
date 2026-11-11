@@ -1,0 +1,82 @@
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { db, newId, type Trip } from '../db'
+import { PageHeader } from '../components/ui'
+
+type Draft = Pick<Trip, 'title' | 'destination' | 'startDate' | 'endDate' | 'notes'>
+const EMPTY: Draft = { title: '', destination: '', startDate: '', endDate: '', notes: '' }
+
+export default function TripForm() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [draft, setDraft] = useState<Draft>(EMPTY)
+  const [loaded, setLoaded] = useState(!id)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!id) return
+    db.trips.get(id).then((t) => {
+      if (!t) return navigate('/trips', { replace: true })
+      setDraft({ title: t.title, destination: t.destination, startDate: t.startDate, endDate: t.endDate, notes: t.notes })
+      setLoaded(true)
+    })
+  }, [id, navigate])
+
+  const set = <K extends keyof Draft>(k: K, v: Draft[K]) => { setDraft((d) => ({ ...d, [k]: v })); setError('') }
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    const title = draft.title.trim() || draft.destination.trim()
+    if (!title) return setError('Введите название или направление поездки')
+    if (draft.startDate && draft.endDate && draft.endDate < draft.startDate)
+      return setError('Дата возвращения не может быть раньше даты начала')
+    const clean = { ...draft, title, destination: draft.destination.trim(), notes: draft.notes.trim() }
+    const now = Date.now()
+    if (id) {
+      await db.trips.update(id, { ...clean, updatedAt: now })
+      navigate(`/trips/${id}`, { replace: true })
+    } else {
+      const tripId = newId()
+      await db.trips.add({ id: tripId, ...clean, createdAt: now, updatedAt: now })
+      navigate(`/trips/${tripId}`, { replace: true })
+    }
+  }
+
+  if (!loaded) return null
+  const back = id ? `/trips/${id}` : '/trips'
+
+  return (
+    <>
+      <PageHeader title={id ? 'Редактировать поездку' : 'Новая поездка'} back={back} />
+      <form className="form" onSubmit={onSubmit} noValidate>
+        <label className="field">
+          <span>Название *</span>
+          <input value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder="Например, Италия на майские" autoFocus={!id} />
+        </label>
+        <label className="field">
+          <span>Куда</span>
+          <input value={draft.destination} onChange={(e) => set('destination', e.target.value)} placeholder="Страна, города" />
+        </label>
+        <div className="field-row">
+          <label className="field">
+            <span>Начало</span>
+            <input type="date" value={draft.startDate} onChange={(e) => set('startDate', e.target.value)} />
+          </label>
+          <label className="field">
+            <span>Возвращение</span>
+            <input type="date" value={draft.endDate} min={draft.startDate || undefined} onChange={(e) => set('endDate', e.target.value)} />
+          </label>
+        </div>
+        <label className="field">
+          <span>Заметки</span>
+          <textarea rows={4} value={draft.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Что взять, важные контакты, идеи" />
+        </label>
+        {error && <div className="error">{error}</div>}
+        <div className="form-actions">
+          <button type="submit" className="btn btn-primary">{id ? 'Сохранить' : 'Создать поездку'}</button>
+          <Link to={back} className="btn">Отмена</Link>
+        </div>
+      </form>
+    </>
+  )
+}

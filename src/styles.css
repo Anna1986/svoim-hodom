@@ -535,3 +535,5 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 }
 .field input::-webkit-date-and-time-value { text-align: left; margin: 0; }
 .field input::-webkit-calendar-picker-indicator { margin-left: auto; }
+
+.stay-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 12px; margin-bottom: 8px; font-weight: 500; }

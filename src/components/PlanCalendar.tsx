@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import type { Item } from '../db'
 import type { PlanEvent } from '../trip'
 import { CatIcon } from './icons'
 import { formatDay, todayISO } from '../format'
@@ -12,13 +14,24 @@ const parse = (s: string) => { const [y, m, d] = s.split('-').map(Number); retur
  * Календарь поездки: дни поездки подсвечены, в днях с событиями — иконки.
  * Нажатие на день показывает его события под календарём (renderDay).
  */
-export function PlanCalendar({ byDay, start, end, renderDay }: {
+export function PlanCalendar({ byDay, start, end, items, renderDay }: {
   byDay: [string, PlanEvent[]][]
   start: string
   end: string
+  items: Item[]
   renderDay: (date: string, events: PlanEvent[]) => React.ReactNode
 }) {
   const eventsByDate = new Map(byDay)
+
+  // Жильё и аренда авто — на все дни, с заезда до выезда включительно
+  const staysByDate = new Map<string, Item[]>()
+  for (const it of items) {
+    if ((it.category !== 'hotel' && it.category !== 'car') || !it.startDate || !it.endDate) continue
+    for (let d = parse(it.startDate); iso(d) <= it.endDate; d.setDate(d.getDate() + 1)) {
+      const k = iso(d)
+      staysByDate.set(k, [...(staysByDate.get(k) ?? []), it])
+    }
+  }
   const dates = byDay.map(([d]) => d)
   const from = [start, dates[0]].filter(Boolean).sort()[0]
   const to = [end, dates.at(-1)].filter(Boolean).sort().at(-1)
@@ -75,7 +88,8 @@ export function PlanCalendar({ byDay, start, end, renderDay }: {
                       date === selected && 'cal-sel',
                       ev.length > 0 && 'cal-has',
                     ].filter(Boolean).join(' ')
-                    const cats = [...new Set(ev.map((e) => e.item.category))].slice(0, 3)
+                    const stays = staysByDate.get(date) ?? []
+                    const cats = [...new Set([...ev.map((e) => e.item.category), ...stays.map((it) => it.category)])].slice(0, 3)
                     return (
                       <button key={date} className={cls} onClick={() => setSelected(date)} aria-label={formatDay(date)}>
                         <span className="cal-num">{Number(date.slice(8))}</span>
@@ -92,9 +106,23 @@ export function PlanCalendar({ byDay, start, end, renderDay }: {
       {selected && (
         <div className="cal-details">
           <h3 className="day-title">{formatDay(selected)}{selected === today && <span className="pill pill-current">сегодня</span>}</h3>
-          {(eventsByDate.get(selected)?.length ?? 0) > 0
-            ? renderDay(selected, eventsByDate.get(selected)!)
-            : <p className="muted">В этот день ничего не запланировано.</p>}
+          {(() => {
+            const ev = eventsByDate.get(selected) ?? []
+            // Проживание показываем, если в этот день нет заезда или выезда по этой брони
+            const stays = (staysByDate.get(selected) ?? []).filter((it) => !ev.some((e) => e.item.id === it.id))
+            if (!ev.length && !stays.length) return <p className="muted">В этот день ничего не запланировано.</p>
+            return (
+              <>
+                {stays.map((it) => (
+                  <Link key={it.id} to={`/items/${it.id}`} className="stay-row">
+                    <CatIcon c={it.category} size={28} />
+                    <span><span className="muted">{it.category === 'hotel' ? 'Проживание' : 'Аренда авто'}:</span> {it.title}</span>
+                  </Link>
+                ))}
+                {ev.length > 0 && renderDay(selected, ev)}
+              </>
+            )
+          })()}
         </div>
       )}
     </div>

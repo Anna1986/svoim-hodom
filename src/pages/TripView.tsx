@@ -142,7 +142,7 @@ export default function TripView() {
               <button className={view === 'calendar' ? 'active' : ''} onClick={() => setParams({ tab: 'plan', view: 'calendar' }, { replace: true })}><IconCalendar size={18} /> Календарь</button>
             </div>
             {view === 'calendar' ? (
-              <PlanCalendar byDay={byDay} start={trip.startDate} end={trip.endDate} renderDay={(_, events) => renderEvents(events)} />
+              <PlanCalendar byDay={byDay} start={trip.startDate} end={trip.endDate} items={items} renderDay={(_, events) => renderEvents(events)} />
             ) : (
               byDay.map(([date, events]) => (
                 <section key={date} className={`day ${date < today ? 'day-past' : ''} ${date === today ? 'day-today' : ''}`}>

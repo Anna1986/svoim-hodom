@@ -12,6 +12,7 @@ import { AccountBadge, Avatar } from './components/Account'
 import { useSyncState } from './sync'
 import { IconCompass, IconDoc, IconSuitcase, IconUser } from './components/icons'
 import Explore from './pages/Explore'
+import SharedTrip from './pages/SharedTrip'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
@@ -23,6 +24,15 @@ export default function App() {
   const { pathname } = useLocation()
   const sync = useSyncState()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+
+  // Поездка по ссылке «поделиться» — отдельная страница без меню приложения
+  if (pathname.startsWith('/s/')) {
+    return (
+      <Routes>
+        <Route path="/s/:token" element={<SharedTrip />} />
+      </Routes>
+    )
+  }
 
   return (
     <div className="app">

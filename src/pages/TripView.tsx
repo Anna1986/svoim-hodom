@@ -3,7 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
 import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
 import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { ShareSheet } from '../components/ShareSheet'
 import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
@@ -53,6 +54,7 @@ export default function TripView() {
     return counts
   }, [id])
   const docs = useLiveQuery(() => db.docs.toArray(), [])
+  const [sharing, setSharing] = useState(false)
 
   // Билеты могли прийти с другого устройства или появиться раньше этой функции — подгоняем даты.
   useEffect(() => {
@@ -106,7 +108,11 @@ export default function TripView() {
 
   return (
     <>
-      <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
+      <div className="hero-top">
+        <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
+        <button className="hero-back share-btn" onClick={() => setSharing(true)}>⤴︎ Поделиться</button>
+      </div>
+      {sharing && <ShareSheet tripId={trip.id} title={trip.title} onClose={() => setSharing(false)} />}
       <header className="hero">
         <img className="cover-img" src={coverFor(trip).src} alt="" style={{ objectPosition: coverFor(trip).position }} />
         <div className="cover-fade" />

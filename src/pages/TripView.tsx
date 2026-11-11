@@ -6,7 +6,9 @@ import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdo
 import { useEffect } from 'react'
 import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
-import { CatIcon, IconBack, IconBriefcase, IconCalendar, IconChevron, IconClock, IconPin } from '../components/icons'
+import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
+import { PlanCalendar } from '../components/PlanCalendar'
+import type { PlanEvent } from '../trip'
 
 function placeLine(item: Item): string {
   if (item.place && item.placeTo) return `${item.place} → ${item.placeTo}`
@@ -35,7 +37,9 @@ export default function TripView() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const tab = params.get('tab') === 'folders' || params.get('folder') ? 'folders' : 'plan'
+  // Слева — «Брони и билеты» (по умолчанию), справа — план
+  const tab = params.get('tab') === 'plan' ? 'plan' : 'folders'
+  const view = params.get('view') === 'calendar' ? 'calendar' : 'list'
   const folder = params.get('folder') as Category | null
 
   const trip = useLiveQuery(async () => (await db.trips.get(id!)) ?? null, [id])
@@ -74,6 +78,30 @@ export default function TripView() {
     navigate('/trips', { replace: true })
   }
 
+  function renderEvents(events: PlanEvent[]) {
+    return (
+      <ul className="events">
+        {events.map((e) => (
+          <li key={e.key}>
+            <Link to={`/items/${e.item.id}`} className={`event ${e.key === nextKey ? 'event-next' : ''}`}>
+              <span className="event-time">
+                {e.time || '—'}
+                {e.timeEnd && <small>{e.timeEnd}</small>}
+              </span>
+              <CatIcon c={e.item.category} size={40} className="event-img" />
+              <span className="event-body">
+                {e.label && <span className="event-label">{e.label}</span>}
+                <span className="event-title">{e.item.title}</span>
+                {placeLine(e.item) && <span className="row-sub">{placeLine(e.item)}</span>}
+              </span>
+              {fileCounts![e.item.id] > 0 && <span className="row-files">📎</span>}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
   const addLink = folder ? `/trips/${trip.id}/items/new?category=${folder}` : `/trips/${trip.id}/add`
 
   return (
@@ -93,11 +121,11 @@ export default function TripView() {
       {warnings.map((w, i) => <div key={i} className="warning">⚠️ {w}</div>)}
 
       <div className="tabs" role="tablist">
-        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>
-          <IconCalendar size={20} /> План по дням
+        <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>
+          <IconTicket size={20} /> Брони и билеты
         </button>
-        <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'folders' }, { replace: true })}>
-          <IconBriefcase size={20} /> Папки
+        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'plan', ...(view === 'calendar' ? { view } : {}) }, { replace: true })}>
+          <IconCalendar size={20} /> План
         </button>
       </div>
 
@@ -109,35 +137,23 @@ export default function TripView() {
           </Empty>
         ) : (
           <div className="plan">
-            {byDay.map(([date, events]) => (
-              <section key={date} className={`day ${date < today ? 'day-past' : ''} ${date === today ? 'day-today' : ''}`}>
-                <h3 className="day-title">
-                  {formatDay(date)}
-                  {date === today && <span className="pill pill-current">сегодня</span>}
-                </h3>
-                <ul className="events">
-                  {events.map((e) => {
-                    return (
-                      <li key={e.key}>
-                        <Link to={`/items/${e.item.id}`} className={`event ${e.key === nextKey ? 'event-next' : ''}`}>
-                          <span className="event-time">
-                            {e.time || '—'}
-                            {e.timeEnd && <small>{e.timeEnd}</small>}
-                          </span>
-                          <CatIcon c={e.item.category} size={40} className="event-img" />
-                          <span className="event-body">
-                            {e.label && <span className="event-label">{e.label}</span>}
-                            <span className="event-title">{e.item.title}</span>
-                            {placeLine(e.item) && <span className="row-sub">{placeLine(e.item)}</span>}
-                          </span>
-                          {fileCounts[e.item.id] > 0 && <span className="row-files">📎</span>}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </section>
-            ))}
+            <div className="view-toggle">
+              <button className={view === 'list' ? 'active' : ''} onClick={() => setParams({ tab: 'plan' }, { replace: true })}><IconList /> По дням</button>
+              <button className={view === 'calendar' ? 'active' : ''} onClick={() => setParams({ tab: 'plan', view: 'calendar' }, { replace: true })}><IconCalendar size={18} /> Календарь</button>
+            </div>
+            {view === 'calendar' ? (
+              <PlanCalendar byDay={byDay} start={trip.startDate} end={trip.endDate} renderDay={(_, events) => renderEvents(events)} />
+            ) : (
+              byDay.map(([date, events]) => (
+                <section key={date} className={`day ${date < today ? 'day-past' : ''} ${date === today ? 'day-today' : ''}`}>
+                  <h3 className="day-title">
+                    {formatDay(date)}
+                    {date === today && <span className="pill pill-current">сегодня</span>}
+                  </h3>
+                  {renderEvents(events)}
+                </section>
+              ))
+            )}
             {undated.length > 0 && (
               <section className="day">
                 <h3 className="day-title">Без даты</h3>
@@ -145,7 +161,7 @@ export default function TripView() {
               </section>
             )}
             {items.some((i) => !CATEGORIES[i.category].inPlan) && (
-              <p className="muted small">Визы и страховки — во вкладке «Папки».</p>
+              <p className="muted small">Визы и страховки — во вкладке «Брони и билеты».</p>
             )}
           </div>
         )
@@ -171,7 +187,7 @@ export default function TripView() {
 
       {tab === 'folders' && folder && CATEGORIES[folder] && (
         <section>
-          <button className="back back-btn" onClick={() => setParams({ tab: 'folders' }, { replace: true })}>← Все папки</button>
+          <button className="back back-btn" onClick={() => setParams({}, { replace: true })}>← Все брони и билеты</button>
           <h2 className="folder-heading"><CatIcon c={folder} size={48} /> {CATEGORIES[folder].label}</h2>
           {(() => {
             const list = items

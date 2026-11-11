@@ -88,3 +88,12 @@ export const IconCompass = ({ size = 24, className = '' }: P) => svg(size, class
   <circle cx="12" cy="12" r="9" />
   <path d="M15.5 8.5l-2 5-5 2 2-5z" />
 </>)
+
+export const IconTicket = ({ size = 20, className = '' }: P) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+    <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z" fill="currentColor" />
+    <path d="M14.5 7v10" stroke="#fff" strokeWidth="1.6" strokeDasharray="2 2" />
+  </svg>
+)
+
+export const IconList = ({ size = 18, className = '' }: P) => svg(size, className, <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />)

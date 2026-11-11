@@ -10,10 +10,12 @@ import { DocForm, DocsList, DocView } from './pages/Docs'
 import Settings from './pages/Settings'
 import { AccountBadge, Avatar } from './components/Account'
 import { useSyncState } from './sync'
-import { IconDoc, IconSuitcase, IconUser } from './components/icons'
+import { IconCompass, IconDoc, IconSuitcase, IconUser } from './components/icons'
+import Explore from './pages/Explore'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
+  { to: '/explore', match: ['/explore'], label: 'Куда поехать', Icon: IconCompass },
   { to: '/docs', match: ['/docs'], label: 'Документы', Icon: IconDoc },
 ]
 
@@ -63,6 +65,7 @@ export default function App() {
           <Route path="/docs/:id" element={<DocView />} />
           <Route path="/docs/:id/edit" element={<DocForm />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/explore" element={<Explore />} />
           <Route path="*" element={<Navigate to="/trips" replace />} />
         </Routes>
       </main>

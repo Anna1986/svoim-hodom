@@ -472,3 +472,23 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .cover-opt-active img { outline-color: var(--primary); }
 .cover-opt-active span { color: var(--primary); font-weight: 600; }
 .hint-tight { margin: 4px 0 0; }
+
+/* ---------- Куда поехать ---------- */
+.explore-from { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.from-chip { display: inline-flex; align-items: center; gap: 6px; border: none; background: var(--surface); box-shadow: var(--shadow); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 600; color: var(--text); cursor: pointer; }
+.search-input { width: 100%; font: inherit; font-size: 16px; min-height: 48px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 14px; margin-top: 8px; }
+.city-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.city-list button { width: 100%; text-align: left; background: none; border: none; padding: 12px 6px; font: inherit; border-bottom: 1px solid var(--border); cursor: pointer; color: var(--text); }
+.chips + .chips { margin-top: -6px; }
+.explore-loading { text-align: center; color: var(--muted); padding: 40px 0; }
+.deals { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+@media (min-width: 1000px) { .deals { grid-template-columns: 1fr 1fr; } }
+.deal { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+.deal-cover { position: relative; aspect-ratio: 2 / 1; background: #dbeafe; }
+.deal-info { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 3px; padding: 14px 16px; max-width: 72%; }
+.deal-city { font-size: 1.35rem; font-weight: 800; color: #0b1733; line-height: 1.1; }
+.deal-price { font-size: 1.2rem; font-weight: 800; color: var(--primary); margin-top: 4px; }
+.deal-meta { font-size: 0.8rem; color: #334155; }
+.deal-actions { display: flex; gap: 10px; padding: 12px; }
+.deal-actions .btn { flex: 1; min-height: 44px; padding: 0 10px; font-size: 0.95rem; }
+.description { overflow-wrap: anywhere; }

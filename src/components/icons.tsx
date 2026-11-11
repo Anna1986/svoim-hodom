@@ -83,3 +83,8 @@ export const IconBriefcase = ({ size = 20, className = '' }: P) => (
 export const IconChevron = ({ size = 20, className = '' }: P) => svg(size, className, <path d="M9 6l6 6-6 6" />)
 
 export const IconBack = ({ size = 20, className = '' }: P) => svg(size, className, <path d="M15 6l-6 6 6 6" />)
+
+export const IconCompass = ({ size = 24, className = '' }: P) => svg(size, className, <>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+</>)

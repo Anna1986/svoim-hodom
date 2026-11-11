@@ -106,16 +106,29 @@ export function passportWarnings(trip: Trip, docs: Doc[]): string[] {
 
 const isTicket = (i: Item) => (i.category === 'flight' || i.category === 'transport') && Boolean(i.startDate)
 
+const city = (s: string) => (s.toLowerCase().replace(/ё/g, 'е').match(/[a-zа-я-]+/)?.[0] ?? '')
+
+/** Есть ли билет туда и билет обратно: последний билет приходит туда, откуда уехали первым. */
+function isRoundTrip(tickets: Item[]): boolean {
+  if (tickets.length < 2) return false
+  const sorted = [...tickets].sort((a, b) => (a.startDate + a.startTime).localeCompare(b.startDate + b.startTime))
+  const from = city(sorted[0].place)
+  const back = city(sorted.at(-1)!.placeTo)
+  if (!from || !back) return true // города не указаны — считаем, что есть туда и обратно
+  return from === back || from.startsWith(back) || back.startsWith(from)
+}
+
 /**
- * Если билеты на самолёт или поезд выходят за даты поездки, расширяем поездку:
- * начало — не позже первого отправления, конец — не раньше последнего прибытия.
- * Даты только расширяются: если билеты внутри плана, план не меняется.
+ * Даты поездки по билетам на самолёт или поезд:
+ * — есть билеты туда и обратно → поездка точно от первого отправления до последнего прибытия;
+ * — билеты пока не все → поездка только расширяется, чтобы их вместить.
  */
 export function fittedDates(trip: Pick<Trip, 'startDate' | 'endDate'>, items: Item[]): { startDate: string; endDate: string } {
   const tickets = items.filter(isTicket)
   if (!tickets.length) return { startDate: trip.startDate, endDate: trip.endDate }
   const first = tickets.map((t) => t.startDate).sort()[0]
   const last = tickets.map((t) => t.endDate || t.startDate).sort().at(-1)!
+  if (isRoundTrip(tickets)) return { startDate: first, endDate: last }
   return {
     startDate: !trip.startDate || first < trip.startDate ? first : trip.startDate,
     endDate: !trip.endDate || last > trip.endDate ? last : trip.endDate,

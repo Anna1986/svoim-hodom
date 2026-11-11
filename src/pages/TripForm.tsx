@@ -69,7 +69,7 @@ export default function TripForm() {
             <input type="date" value={draft.endDate} min={draft.startDate || undefined} onChange={(e) => set('endDate', e.target.value)} />
           </label>
         </div>
-        <p className="hint-text hint-tight">Если билеты на самолёт или поезд выходят за эти даты, поездка расширится по билетам автоматически.</p>
+        <p className="hint-text hint-tight">Даты подстраиваются под билеты на самолёт и поезд: когда есть билеты туда и обратно, поездка будет точно по ним.</p>
         <label className="field">
           <span>Заметки</span>
           <textarea rows={4} value={draft.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Что взять, важные контакты, идеи" />

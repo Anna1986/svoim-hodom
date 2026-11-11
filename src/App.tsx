@@ -8,21 +8,26 @@ import ItemForm from './pages/ItemForm'
 import ItemView from './pages/ItemView'
 import { DocForm, DocsList, DocView } from './pages/Docs'
 import Settings from './pages/Settings'
+import { AccountBadge, Avatar } from './components/Account'
+import { useSyncState } from './sync'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', icon: '🧳' },
   { to: '/docs', match: ['/docs'], label: 'Документы', icon: '🛂' },
-  { to: '/settings', match: ['/settings'], label: 'Настройки', icon: '⚙️' },
 ]
 
 export default function App() {
   const { pathname } = useLocation()
+  const sync = useSyncState()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
 
   return (
     <div className="app">
       <nav className="nav">
         <div className="nav-brand">🧳 Путешествия</div>
+        <NavLink to="/settings" className="nav-account">
+          {sync.user ? <AccountBadge /> : <span className="nav-login"><Avatar size={36} /> Войти в кабинет</span>}
+        </NavLink>
         {NAV.map((n) => (
           <NavLink
             key={n.to}
@@ -33,6 +38,13 @@ export default function App() {
             <span className="nav-label">{n.label}</span>
           </NavLink>
         ))}
+        <NavLink
+          to="/settings"
+          className={() => `nav-item nav-profile ${pathname.startsWith('/settings') ? 'active' : ''}`}
+        >
+          <span className="nav-icon" aria-hidden>{sync.user ? <Avatar size={26} /> : '👤'}</span>
+          <span className="nav-label">{sync.user ? 'Профиль' : 'Войти'}</span>
+        </NavLink>
       </nav>
       <main className="main">
         <Routes>

@@ -4,7 +4,7 @@ import { db, type Trip } from '../db'
 import { formatRange } from '../format'
 import { tripCountdown, tripPhase, type Phase } from '../trip'
 import { Empty, Fab, PageHeader } from '../components/ui'
-import { SyncLine } from '../components/Account'
+import { AccountBadge } from '../components/Account'
 import { useSyncState } from '../sync'
 
 const SECTIONS: { phase: Phase; title: string }[] = [
@@ -44,7 +44,7 @@ export default function TripsList() {
       {sync.ready && !sync.user && (
         <Link to="/settings" className="banner">☁️ Войдите, чтобы поездки были одинаковыми на телефоне и компьютере →</Link>
       )}
-      {sync.user && <div className="sync-top"><SyncLine /></div>}
+      {sync.user && <Link to="/settings" className="show-mobile account-link"><AccountBadge compact /></Link>}
 
       {trips.length === 0 ? (
         <Empty icon="🧳">

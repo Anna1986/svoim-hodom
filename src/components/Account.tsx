@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { signIn, signOut, signUp, syncNow, useSyncState } from '../sync'
+import { signIn, signOut, signUp, syncNow, updateName, useSyncState, type SyncState } from '../sync'
 
 function ago(ts: number): string {
   const s = Math.round((Date.now() - ts) / 1000)
@@ -7,6 +7,20 @@ function ago(ts: number): string {
   const m = Math.round(s / 60)
   if (m < 60) return `${m} мин назад`
   return new Date(ts).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+export function displayName(user: NonNullable<SyncState['user']>): string {
+  return user.name || user.email.split('@')[0]
+}
+
+export function Avatar({ size = 32 }: { size?: number }) {
+  const { user } = useSyncState()
+  const letter = user ? displayName(user).charAt(0).toUpperCase() : '👤'
+  return (
+    <span className={`avatar ${user ? '' : 'avatar-guest'}`} style={{ width: size, height: size, fontSize: size * 0.45 }} aria-hidden>
+      {letter}
+    </span>
+  )
 }
 
 export function SyncLine() {
@@ -17,6 +31,52 @@ export function SyncLine() {
   if (!navigator.onLine) return <span className="sync-line">Нет сети — изменения отправятся позже{s.pending ? ` (${s.pending})` : ''}</span>
   if (s.pending) return <span className="sync-line">Ожидают отправки: {s.pending}</span>
   return <span className="sync-line sync-ok">✓ Синхронизировано{s.lastSync ? ` · ${ago(s.lastSync)}` : ''}</span>
+}
+
+/** Карточка «вы в своём кабинете» — для главного экрана и бокового меню. */
+export function AccountBadge({ compact = false }: { compact?: boolean }) {
+  const s = useSyncState()
+  if (!s.ready || !s.user) return null
+  return (
+    <div className={`account-badge ${compact ? 'account-badge-compact' : ''}`}>
+      <Avatar size={compact ? 36 : 40} />
+      <div className="account-badge-text">
+        <span className="account-name">{displayName(s.user)}</span>
+        <SyncLine />
+      </div>
+    </div>
+  )
+}
+
+function NameEditor({ current }: { current: string }) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(current)
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  if (!editing) {
+    return (
+      <button className="link-btn" onClick={() => { setValue(current); setEditing(true) }}>
+        {current ? 'Изменить имя' : 'Указать имя'}
+      </button>
+    )
+  }
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    const error = await updateName(value.trim())
+    setBusy(false)
+    if (error) setErr(error)
+    else setEditing(false)
+  }
+  return (
+    <form className="name-form" onSubmit={save}>
+      <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="Как к вам обращаться" autoFocus />
+      <button className="btn btn-primary" disabled={busy}>Сохранить</button>
+      <button type="button" className="btn" onClick={() => setEditing(false)}>Отмена</button>
+      {err && <div className="error">{err}</div>}
+    </form>
+  )
 }
 
 export function AccountSection() {
@@ -54,10 +114,17 @@ export function AccountSection() {
 
   if (s.user) {
     return (
-      <section className="section">
-        <h2>Аккаунт и синхронизация</h2>
-        <p className="muted">Вы вошли как <b className="text">{s.user.email}</b>. Поездки, документы и файлы одинаковые на всех устройствах, где вы вошли.</p>
-        <p><SyncLine /></p>
+      <section className="section profile-card">
+        <div className="profile-head">
+          <Avatar size={64} />
+          <div className="profile-info">
+            <div className="profile-name">{displayName(s.user)}</div>
+            <div className="muted">{s.user.email}</div>
+            <NameEditor current={s.user.name} />
+          </div>
+        </div>
+        <p className="profile-sync"><SyncLine /></p>
+        <p className="muted small">Ваши поездки, документы и файлы одинаковые на всех устройствах, где вы вошли в этот аккаунт.</p>
         <div className="form-actions">
           <button className="btn btn-primary" onClick={() => syncNow()} disabled={s.syncing}>Синхронизировать</button>
           <button className="btn" onClick={() => { if (window.confirm('Выйти из аккаунта? Данные останутся на этом устройстве, но перестанут синхронизироваться.')) signOut() }}>Выйти</button>
@@ -68,7 +135,7 @@ export function AccountSection() {
 
   return (
     <section className="section" id="account">
-      <h2>Аккаунт и синхронизация</h2>
+      <h2>Вход в личный кабинет</h2>
       <p className="muted">Войдите, чтобы на телефоне и компьютере были одни и те же поездки, документы и файлы. На каждом устройстве нужно войти один раз.</p>
       <div className="tabs tabs-small">
         <button className={`tab ${mode === 'in' ? 'tab-active' : ''}`} onClick={() => { setMode('in'); setErr('') }}>Вход</button>

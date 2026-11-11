@@ -54,7 +54,7 @@ export default function Settings() {
 
   return (
     <>
-      <PageHeader title="Настройки" />
+      <PageHeader title={sync.user ? 'Профиль' : 'Вход и настройки'} />
 
       <AccountSection />
 

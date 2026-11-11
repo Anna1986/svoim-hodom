@@ -31,7 +31,7 @@ interface Row {
 
 export interface SyncState {
   ready: boolean
-  user: { id: string; email: string } | null
+  user: { id: string; email: string; name: string } | null
   syncing: boolean
   lastSync: number | null
   error: string
@@ -279,6 +279,13 @@ export async function signUp(email: string, password: string): Promise<{ error: 
   return { error: '', needsConfirm: !data.session }
 }
 
+export async function updateName(name: string): Promise<string> {
+  const { data, error } = await supabase.auth.updateUser({ data: { name } })
+  if (error) return humanError(error)
+  if (data.user && state.user) setState({ user: { ...state.user, name: String(data.user.user_metadata?.name ?? '') } })
+  return ''
+}
+
 export async function signOut() {
   await supabase.auth.signOut()
 }
@@ -292,7 +299,7 @@ export function initSync() {
   supabase.auth.onAuthStateChange((_event, session) => {
     const u = session?.user
     const prev = state.user?.id
-    setState({ ready: true, user: u ? { id: u.id, email: u.email ?? '' } : null })
+    setState({ ready: true, user: u ? { id: u.id, email: u.email ?? '', name: String(u.user_metadata?.name ?? '') } : null })
     if (u && u.id !== prev) scheduleSync(0)
   })
 

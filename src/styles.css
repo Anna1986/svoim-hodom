@@ -518,3 +518,20 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .cal-icons .cat-icon { border-radius: 4px; }
 .cal-details { margin-top: 4px; }
 @media (min-width: 768px) { .cal-day { min-height: 64px; } }
+
+/* ---------- Поля даты и времени: в Safari на iPhone они не сжимаются без этих правил ---------- */
+.field-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; }
+.field-row:has(.field-time) { grid-template-columns: minmax(0, 1fr) 7.5rem; grid-auto-flow: row; }
+.field-time { flex: none; }
+.field input[type='date'],
+.field input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  text-align: left;
+  line-height: 1.5;
+}
+.field input::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.field input::-webkit-calendar-picker-indicator { margin-left: auto; }

@@ -48,3 +48,17 @@ export function CopyValue({ value }: { value: string }) {
     </button>
   )
 }
+
+/** Текст, в котором ссылки становятся кликабельными. */
+export function Linkify({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g)
+  return (
+    <>
+      {parts.map((p, i) =>
+        /^https?:\/\//.test(p)
+          ? <a key={i} href={p} target="_blank" rel="noopener" className="link">{p.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40)}{p.length > 48 ? '…' : ''}</a>
+          : <span key={i}>{p}</span>,
+      )}
+    </>
+  )
+}

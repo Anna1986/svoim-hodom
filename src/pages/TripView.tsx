@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
 import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
 import { buildPlan, passportWarnings, tripCountdown, tripPhase } from '../trip'
-import { Empty, Fab } from '../components/ui'
+import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconBriefcase, IconCalendar, IconChevron, IconClock, IconPin } from '../components/icons'
 
@@ -182,7 +182,7 @@ export default function TripView() {
       {trip.notes && (
         <section className="section notes-section">
           <h2>Заметки</h2>
-          <p className="description">{trip.notes}</p>
+          <p className="description"><Linkify text={trip.notes} /></p>
         </section>
       )}
 

@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, db, deleteItem } from '../db'
 import { formatDateTime } from '../format'
-import { CopyValue, Empty, PageHeader } from '../components/ui'
+import { CopyValue, Empty, Linkify, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
 import { CatIcon } from '../components/icons'
 
@@ -48,7 +48,7 @@ export default function ItemView() {
         {item.link && (<><dt>Ссылка</dt><dd><a href={item.link} target="_blank" rel="noopener" className="link break">{item.link.replace(/^https?:\/\//, '')}</a></dd></>)}
       </dl>
 
-      {item.notes && <p className="description">{item.notes}</p>}
+      {item.notes && <p className="description"><Linkify text={item.notes} /></p>}
 
       <Attachments ownerType="item" ownerId={item.id} />
 

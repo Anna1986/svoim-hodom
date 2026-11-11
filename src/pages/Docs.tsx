@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { addAttachments, db, deleteDoc, DOC_KINDS, newId, type Doc, type DocKind } from '../db'
 import { formatDate } from '../format'
 import { expiryHint } from '../trip'
-import { CopyValue, Empty, Fab, PageHeader } from '../components/ui'
+import { CopyValue, Empty, Fab, Linkify, PageHeader } from '../components/ui'
 import { Attachments, PendingFiles } from '../components/Attachments'
 import { DocIcon } from '../components/icons'
 
@@ -83,7 +83,7 @@ export function DocView() {
           <><dt>Действует до</dt><dd className="strong">{formatDate(doc.expiryDate)}{hint && <span className={`hint-${hint.tone}`}> · {hint.text}</span>}</dd></>
         )}
       </dl>
-      {doc.notes && <p className="description">{doc.notes}</p>}
+      {doc.notes && <p className="description"><Linkify text={doc.notes} /></p>}
       <Attachments ownerType="doc" ownerId={doc.id} />
       <div className="form-actions">
         <Link to={`/docs/${doc.id}/edit`} className="btn btn-primary">Редактировать</Link>

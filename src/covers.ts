@@ -65,3 +65,7 @@ export function coverFor(trip: Pick<Trip, 'id' | 'title' | 'destination'> & { co
   const key = trip.cover && trip.cover in BY_KEY ? (trip.cover as CoverKey) : autoCoverKey(trip)
   return BY_KEY[key]
 }
+
+export function coverByKey(key: CoverKey): Cover {
+  return BY_KEY[key]
+}

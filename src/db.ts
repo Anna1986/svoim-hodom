@@ -68,7 +68,7 @@ export const CATEGORIES: Record<Category, CategoryConfig> = {
     titlePlaceholder: 'Например, Sixt, Toyota Corolla',
   },
   voucher: {
-    label: 'Экскурсии и билеты', one: 'Событие', add: 'событие', icon: '🎟️',
+    label: 'События и экскурсии', one: 'Событие', add: 'событие', icon: '🎟️',
     start: 'Начало', end: 'Окончание', place: 'Место встречи', placeTo: '',
     ref: 'Номер билета или ваучера', withTime: true, inPlan: true,
     titlePlaceholder: 'Например, Экскурсия в Ватикан',

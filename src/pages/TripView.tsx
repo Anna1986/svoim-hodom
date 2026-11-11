@@ -3,7 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
 import { formatDay, formatRange, formatShort, todayISO } from '../format'
 import { buildPlan, passportWarnings, tripCountdown, tripPhase } from '../trip'
-import { Empty, Fab, PageHeader } from '../components/ui'
+import { Empty, Fab } from '../components/ui'
+import { CatIcon, HeroArt, IconBack, IconBriefcase, IconCalendar, IconChevron, IconClock, IconPin } from '../components/icons'
 
 function placeLine(item: Item): string {
   if (item.place && item.placeTo) return `${item.place} → ${item.placeTo}`
@@ -11,14 +12,13 @@ function placeLine(item: Item): string {
 }
 
 function ItemRow({ item, fileCount }: { item: Item; fileCount: number }) {
-  const cfg = CATEGORIES[item.category]
   const when = item.startDate
     ? `${formatShort(item.startDate)}${item.startTime ? ' ' + item.startTime : ''}` +
       (item.endDate && item.endDate !== item.startDate ? ` — ${formatShort(item.endDate)}` : '')
     : ''
   return (
     <Link to={`/items/${item.id}`} className="row">
-      <span className="row-icon">{cfg.icon}</span>
+      <CatIcon c={item.category} size={44} className="row-img" />
       <span className="row-body">
         <span className="row-title">{item.title}</span>
         {placeLine(item) && <span className="row-sub">{placeLine(item)}</span>}
@@ -69,19 +69,27 @@ export default function TripView() {
 
   return (
     <>
-      <PageHeader title={trip.title} back="/trips" backLabel="← Поездки" />
-
-      <div className="trip-head">
-        {trip.destination && <div>📍 {trip.destination}</div>}
-        {(trip.startDate || trip.endDate) && <div>🗓 {formatRange(trip.startDate, trip.endDate)}</div>}
-        {countdown && <span className={`pill pill-${tripPhase(trip)}`}>{countdown}</span>}
-      </div>
+      <header className="hero">
+        <div className="hero-sea" />
+        <HeroArt className="hero-art" />
+        <div className="hero-content">
+          <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
+          <h1 className="hero-title">{trip.title}</h1>
+          {trip.destination && <div className="hero-row"><IconPin /> {trip.destination}</div>}
+          {(trip.startDate || trip.endDate) && <div className="hero-row"><IconCalendar className="ic-blue" /> {formatRange(trip.startDate, trip.endDate)}</div>}
+          {countdown && <span className={`hero-pill hero-pill-${tripPhase(trip)}`}><IconClock /> {countdown}</span>}
+        </div>
+      </header>
 
       {warnings.map((w, i) => <div key={i} className="warning">⚠️ {w}</div>)}
 
       <div className="tabs" role="tablist">
-        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>План по дням</button>
-        <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'folders' }, { replace: true })}>Папки</button>
+        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>
+          <IconCalendar size={20} /> План по дням
+        </button>
+        <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'folders' }, { replace: true })}>
+          <IconBriefcase size={20} /> Папки
+        </button>
       </div>
 
       {tab === 'plan' && (
@@ -100,7 +108,6 @@ export default function TripView() {
                 </h3>
                 <ul className="events">
                   {events.map((e) => {
-                    const cfg = CATEGORIES[e.item.category]
                     return (
                       <li key={e.key}>
                         <Link to={`/items/${e.item.id}`} className={`event ${e.key === nextKey ? 'event-next' : ''}`}>
@@ -108,7 +115,7 @@ export default function TripView() {
                             {e.time || '—'}
                             {e.timeEnd && <small>{e.timeEnd}</small>}
                           </span>
-                          <span className="event-icon">{cfg.icon}</span>
+                          <CatIcon c={e.item.category} size={40} className="event-img" />
                           <span className="event-body">
                             {e.label && <span className="event-label">{e.label}</span>}
                             <span className="event-title">{e.item.title}</span>
@@ -140,10 +147,13 @@ export default function TripView() {
           {CATEGORY_ORDER.map((c) => {
             const n = items.filter((i) => i.category === c).length
             return (
-              <button key={c} className={`folder ${n === 0 ? 'folder-empty' : ''}`} onClick={() => setParams({ folder: c })}>
-                <span className="folder-icon">{CATEGORIES[c].icon}</span>
-                <span className="folder-label">{CATEGORIES[c].label}</span>
+              <button key={c} className="folder" onClick={() => setParams({ folder: c })}>
+                <CatIcon c={c} size={76} className="folder-img" />
                 <span className="folder-count">{n}</span>
+                <span className="folder-foot">
+                  <span className="folder-label">{CATEGORIES[c].label}</span>
+                  <IconChevron size={18} className="folder-chevron" />
+                </span>
               </button>
             )
           })}
@@ -153,7 +163,7 @@ export default function TripView() {
       {tab === 'folders' && folder && CATEGORIES[folder] && (
         <section>
           <button className="back back-btn" onClick={() => setParams({ tab: 'folders' }, { replace: true })}>← Все папки</button>
-          <h2 className="folder-heading">{CATEGORIES[folder].icon} {CATEGORIES[folder].label}</h2>
+          <h2 className="folder-heading"><CatIcon c={folder} size={48} /> {CATEGORIES[folder].label}</h2>
           {(() => {
             const list = items
               .filter((i) => i.category === folder)

@@ -10,10 +10,11 @@ import { DocForm, DocsList, DocView } from './pages/Docs'
 import Settings from './pages/Settings'
 import { AccountBadge, Avatar } from './components/Account'
 import { useSyncState } from './sync'
+import { IconDoc, IconSuitcase, IconUser } from './components/icons'
 
 const NAV = [
-  { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', icon: '🧳' },
-  { to: '/docs', match: ['/docs'], label: 'Документы', icon: '🛂' },
+  { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
+  { to: '/docs', match: ['/docs'], label: 'Документы', Icon: IconDoc },
 ]
 
 export default function App() {
@@ -24,7 +25,7 @@ export default function App() {
   return (
     <div className="app">
       <nav className="nav">
-        <div className="nav-brand">🧳 Путешествия</div>
+        <div className="nav-brand"><IconSuitcase size={26} /> Путешествия</div>
         <NavLink to="/settings" className="nav-account">
           {sync.user ? <AccountBadge /> : <span className="nav-login"><Avatar size={36} /> Войти в кабинет</span>}
         </NavLink>
@@ -34,7 +35,7 @@ export default function App() {
             to={n.to}
             className={() => `nav-item ${n.match.some((m) => pathname.startsWith(m)) ? 'active' : ''}`}
           >
-            <span className="nav-icon" aria-hidden>{n.icon}</span>
+            <span className="nav-icon" aria-hidden><n.Icon size={26} /></span>
             <span className="nav-label">{n.label}</span>
           </NavLink>
         ))}
@@ -42,7 +43,7 @@ export default function App() {
           to="/settings"
           className={() => `nav-item nav-profile ${pathname.startsWith('/settings') ? 'active' : ''}`}
         >
-          <span className="nav-icon" aria-hidden>{sync.user ? <Avatar size={26} /> : '👤'}</span>
+          <span className="nav-icon" aria-hidden>{sync.user ? <Avatar size={26} /> : <IconUser size={26} />}</span>
           <span className="nav-label">{sync.user ? 'Профиль' : 'Войти'}</span>
         </NavLink>
       </nav>

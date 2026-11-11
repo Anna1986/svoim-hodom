@@ -5,6 +5,7 @@ import { formatRange } from '../format'
 import { tripCountdown, tripPhase, type Phase } from '../trip'
 import { Empty, Fab, PageHeader } from '../components/ui'
 import { AccountBadge } from '../components/Account'
+import { HeroArt, IconCalendar, IconClock, IconPin } from '../components/icons'
 import { useSyncState } from '../sync'
 
 const SECTIONS: { phase: Phase; title: string }[] = [
@@ -18,15 +19,15 @@ function TripCard({ t }: { t: Trip }) {
   const countdown = tripCountdown(t)
   const phase = tripPhase(t)
   return (
-    <Link to={`/trips/${t.id}`} className={`card trip-card trip-${phase}`}>
-      <div className="card-title">{t.title}</div>
-      {t.destination && <div className="card-sub">📍 {t.destination}</div>}
-      {(t.startDate || t.endDate) && (
-        <div className="card-meta">
-          {formatRange(t.startDate, t.endDate)}
-          {countdown && <span className={`pill pill-${phase}`}>{countdown}</span>}
-        </div>
-      )}
+    <Link to={`/trips/${t.id}`} className={`trip-card trip-${phase}`}>
+      <div className="hero-sea" />
+      <HeroArt className="trip-card-art" />
+      <div className="trip-card-body">
+        <div className="trip-card-title">{t.title}</div>
+        {t.destination && <div className="hero-row small-row"><IconPin size={16} /> {t.destination}</div>}
+        {(t.startDate || t.endDate) && <div className="hero-row small-row"><IconCalendar size={16} className="ic-blue" /> {formatRange(t.startDate, t.endDate)}</div>}
+        {countdown && <span className={`hero-pill hero-pill-${phase}`}><IconClock size={15} /> {countdown}</span>}
+      </div>
     </Link>
   )
 }

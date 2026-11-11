@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { addAttachments, CATEGORIES, CATEGORY_ORDER, db, newId, type Category, type Item } from '../db'
 import { PageHeader } from '../components/ui'
 import { PendingFiles } from '../components/Attachments'
+import { CatIcon } from '../components/icons'
 
 type Draft = Omit<Item, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
 
@@ -83,13 +84,13 @@ export default function ItemForm() {
 
   return (
     <>
-      <PageHeader title={itemId ? 'Редактировать' : `${cfg.icon} ${cfg.one}`} back={back} />
+      <PageHeader title={itemId ? 'Редактировать' : <span className="title-with-icon"><CatIcon c={draft.category} size={44} /> {cfg.one}</span>} back={back} />
       <form className="form" onSubmit={onSubmit} noValidate>
         {itemId && (
           <label className="field">
             <span>Папка</span>
             <select value={draft.category} onChange={(e) => set('category', e.target.value as Category)}>
-              {CATEGORY_ORDER.map((c) => <option key={c} value={c}>{CATEGORIES[c].icon} {CATEGORIES[c].label}</option>)}
+              {CATEGORY_ORDER.map((c) => <option key={c} value={c}>{CATEGORIES[c].label}</option>)}
             </select>
           </label>
         )}

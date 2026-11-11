@@ -6,6 +6,7 @@ import { formatDate } from '../format'
 import { expiryHint } from '../trip'
 import { CopyValue, Empty, Fab, PageHeader } from '../components/ui'
 import { Attachments, PendingFiles } from '../components/Attachments'
+import { DocIcon } from '../components/icons'
 
 const KIND_ORDER = Object.keys(DOC_KINDS) as DocKind[]
 
@@ -34,7 +35,7 @@ export function DocsList() {
             const hint = expiryHint(d.expiryDate)
             return (
               <Link key={d.id} to={`/docs/${d.id}`} className="row">
-                <span className="row-icon">{DOC_KINDS[d.kind].icon}</span>
+                <DocIcon k={d.kind} size={44} />
                 <span className="row-body">
                   <span className="row-title">{d.title}</span>
                   {d.holder && <span className="row-sub">{d.holder}</span>}
@@ -74,7 +75,7 @@ export function DocView() {
   return (
     <>
       <PageHeader title={doc.title} back="/docs" backLabel="← Документы" />
-      <div className="kind-label">{DOC_KINDS[doc.kind].icon} {DOC_KINDS[doc.kind].label}</div>
+      <div className="kind-label"><DocIcon k={doc.kind} size={36} /> {DOC_KINDS[doc.kind].label}</div>
       <dl className="details">
         {doc.holder && (<><dt>Владелец</dt><dd>{doc.holder}</dd></>)}
         {doc.number && (<><dt>Номер</dt><dd><CopyValue value={doc.number} /></dd></>)}
@@ -147,7 +148,7 @@ export function DocForm() {
         <label className="field">
           <span>Тип</span>
           <select value={draft.kind} onChange={(e) => set('kind', e.target.value as DocKind)}>
-            {KIND_ORDER.map((k) => <option key={k} value={k}>{DOC_KINDS[k].icon} {DOC_KINDS[k].label}</option>)}
+            {KIND_ORDER.map((k) => <option key={k} value={k}>{DOC_KINDS[k].label}</option>)}
           </select>
         </label>
         <label className="field">

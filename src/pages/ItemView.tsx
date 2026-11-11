@@ -4,6 +4,7 @@ import { CATEGORIES, db, deleteItem } from '../db'
 import { formatDateTime } from '../format'
 import { CopyValue, Empty, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
+import { CatIcon } from '../components/icons'
 
 function mapsLink(q: string) {
   return `https://maps.google.com/?q=${encodeURIComponent(q)}`
@@ -30,7 +31,7 @@ export default function ItemView() {
   return (
     <>
       <PageHeader title={item.title} back={tripBack} backLabel={`← ${trip?.title ?? 'Поездка'}`} />
-      <div className="kind-label">{cfg.icon} {cfg.one}</div>
+      <div className="kind-label"><CatIcon c={item.category} size={36} /> {cfg.one}</div>
 
       <dl className="details">
         {item.place && cfg.place && (

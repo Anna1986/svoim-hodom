@@ -1,15 +1,16 @@
 :root {
-  --bg: #f5f6fa;
+  --bg: #f2f6fc;
   --surface: #ffffff;
-  --text: #1f2330;
-  --muted: #6b7280;
-  --border: #e3e5ec;
-  --primary: #0e7490;
-  --primary-soft: #e0f2f7;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e4ebf5;
+  --primary: #2563eb;
+  --primary-soft: #e8f0ff;
+  --shadow: 0 6px 20px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
   --danger: #dc2626;
   --ok: #16a34a;
   --warn: #d97706;
-  --radius: 14px;
+  --radius: 20px;
   --nav-h: 64px;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--text);
@@ -121,7 +122,7 @@ a { color: inherit; text-decoration: none; }
   font-size: 2rem;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(14, 116, 144, 0.4);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
   z-index: 11;
 }
 
@@ -328,3 +329,112 @@ a { color: inherit; text-decoration: none; }
   .nav-account .sync-line { font-size: 0.75rem; }
   .nav-account .account-badge-text { gap: 1px; }
 }
+
+/* =========================================================
+   Новый дизайн: голубая тема, объёмные иконки, шапка поездки
+   ========================================================= */
+body { background: var(--bg); }
+h1 { font-weight: 800; letter-spacing: -0.02em; }
+
+.card, .row, .event, .section, .details, .folder, .account-link, .att { border: none !important; box-shadow: var(--shadow); }
+.btn { border-radius: 14px; }
+.btn-primary { background: linear-gradient(180deg, #3b82f6, #2563eb); border: none; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+.btn-soft { background: var(--primary-soft); }
+.fab { background: linear-gradient(180deg, #3b82f6, #1d4ed8); width: 64px; height: 64px; font-size: 2.1rem; font-weight: 300; }
+
+.cat-icon { flex: none; border-radius: 22%; object-fit: cover; }
+.ic-blue { color: var(--primary); }
+
+/* ---------- Нижнее меню ---------- */
+.nav { background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--border); }
+.nav-item { color: #94a3b8; font-size: 0.75rem; }
+.nav-item.active { color: var(--primary); }
+.nav-icon { display: flex; align-items: center; justify-content: center; height: 28px; }
+.nav-brand { display: none; align-items: center; gap: 8px; }
+@media (min-width: 768px) {
+  .nav { background: var(--surface); border-right: 1px solid var(--border); }
+  .nav-brand { display: flex; }
+  .nav-item { color: var(--muted); }
+}
+
+/* ---------- Шапка поездки ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin: -16px -16px 18px;
+  padding: calc(14px + env(safe-area-inset-top)) 20px 26px;
+  background: linear-gradient(180deg, #8ec5f7 0%, #c7e3fb 45%, #eaf4fe 100%);
+  min-height: 250px;
+}
+.hero::after { content: ''; position: absolute; inset: auto 0 0 0; height: 40px; background: linear-gradient(180deg, rgba(242,246,252,0), var(--bg)); }
+.hero-art { position: absolute; right: -10px; top: 0; height: 100%; width: 72%; max-width: 460px; }
+.hero-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 70%; }
+.hero-back { display: inline-flex; align-items: center; gap: 2px; color: #1e3a8a; font-weight: 500; font-size: 0.95rem; margin-bottom: 10px; background: rgba(255,255,255,0.55); padding: 4px 12px 4px 6px; border-radius: 999px; backdrop-filter: blur(6px); }
+.hero-title { font-size: 2rem; line-height: 1.1; margin: 0 0 6px; color: #0b1733; text-shadow: 0 1px 0 rgba(255,255,255,0.5); }
+.hero-row { display: flex; align-items: center; gap: 10px; font-size: 1.02rem; color: #0f172a; }
+.hero-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 7px 14px 7px 9px; border-radius: 999px; background: rgba(219, 234, 254, 0.95); color: #1e40af; font-weight: 600; font-size: 0.92rem; box-shadow: 0 2px 8px rgba(37,99,235,0.12); }
+.hero-pill svg { color: #2563eb; }
+.hero-pill-current { background: #2563eb; color: #fff; }
+.hero-pill-current svg { color: #fff; }
+.hero-pill-current svg path { stroke: #2563eb; }
+@media (min-width: 768px) {
+  .hero { margin: 0 0 22px; border-radius: 28px; padding: 22px 28px 30px; min-height: 260px; }
+  .hero::after { display: none; }
+  .hero-art { width: 60%; }
+}
+
+/* ---------- Вкладки ---------- */
+.tabs { background: #e6edf8; border-radius: 18px; padding: 5px; margin-bottom: 18px; }
+.tab { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 14px; color: #64748b; font-size: 1rem; }
+.tab svg { color: #94a3b8; }
+.tab-active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); }
+.tab-active svg { color: var(--primary); }
+.tabs-small .tab { min-height: 40px; }
+
+/* ---------- Папки ---------- */
+.folders { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (min-width: 900px) { .folders { grid-template-columns: repeat(3, 1fr); } }
+.folder { background: var(--surface); border-radius: 22px; padding: 14px 14px 14px 16px; min-height: 132px; gap: 8px; justify-content: space-between; transition: transform .12s; }
+.folder:active { transform: scale(0.98); }
+.folder-img { width: 76px; height: 76px; margin: -2px 0 0 -4px; }
+.folder-count { position: absolute; top: 14px; right: 14px; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; }
+.folder-foot { display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; }
+.folder-label { font-weight: 700; font-size: 0.98rem; line-height: 1.2; }
+.folder-chevron { color: #334155; flex: none; }
+.folder-heading { display: flex; align-items: center; gap: 12px; }
+
+/* ---------- План по дням и списки ---------- */
+.event { border-radius: 18px; padding: 12px 14px; align-items: center; }
+.event-next { box-shadow: 0 0 0 2px var(--primary), var(--shadow) !important; }
+.event-time { color: var(--text); }
+.event-label { color: var(--primary); }
+.row { border-radius: 18px; }
+.kind-label { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+.title-with-icon { display: inline-flex; align-items: center; gap: 12px; }
+.day-title { color: #334155; }
+
+/* ---------- Карточки поездок ---------- */
+.trip-card { position: relative; display: block; overflow: hidden; border-radius: 24px; min-height: 150px; background: linear-gradient(180deg, #8ec5f7 0%, #c7e3fb 55%, #eaf4fe 100%); box-shadow: var(--shadow); }
+.trip-card-art { position: absolute; right: -10px; top: 0; height: 100%; width: 62%; }
+.trip-card-body { position: relative; z-index: 1; padding: 18px 18px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 72%; }
+.trip-card-title { font-size: 1.3rem; font-weight: 800; color: #0b1733; line-height: 1.15; margin-bottom: 2px; }
+.small-row { font-size: 0.92rem; gap: 6px; }
+.trip-card .hero-pill { font-size: 0.82rem; padding: 5px 11px 5px 7px; margin-top: 4px; }
+.trip-current { box-shadow: 0 0 0 2px var(--primary), var(--shadow); }
+.trip-past { opacity: 0.7; filter: saturate(0.6); }
+
+.avatar { background: linear-gradient(180deg, #3b82f6, #1d4ed8); }
+.banner { border-radius: 16px; }
+
+/* Море на всю ширину: на широких экранах иллюстрация не растягивается */
+.hero-sea { position: absolute; left: 0; right: 0; bottom: 0; height: 21%; background: linear-gradient(180deg, #8dccf6, #d9f0ff); }
+.hero-content { max-width: 78%; }
+.trip-card-body { max-width: 80%; }
+.trip-card-art { width: auto; aspect-ratio: 400 / 240; max-width: 70%; }
+.trip-card .hero-sea { height: 22%; }
+@media (min-width: 768px) {
+  .hero-art { width: auto; aspect-ratio: 400 / 240; max-width: none; right: 0; }
+  .hero-sea { height: 22%; }
+  .hero-content { max-width: 55%; }
+}
+@media (min-width: 768px) { .nav-item { font-size: 0.98rem; } }

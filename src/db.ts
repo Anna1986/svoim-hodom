@@ -9,6 +9,7 @@ export interface Trip {
   startDate: string // YYYY-MM-DD или ''
   endDate: string
   notes: string
+  cover?: string // ключ обложки; пусто — подбирается автоматически по направлению
   createdAt: number
   updatedAt: number
 }

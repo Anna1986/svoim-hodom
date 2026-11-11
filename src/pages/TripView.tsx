@@ -1,10 +1,11 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
-import { formatDay, formatRange, formatShort, todayISO } from '../format'
+import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
 import { buildPlan, passportWarnings, tripCountdown, tripPhase } from '../trip'
 import { Empty, Fab } from '../components/ui'
-import { CatIcon, HeroArt, IconBack, IconBriefcase, IconCalendar, IconChevron, IconClock, IconPin } from '../components/icons'
+import { coverFor } from '../covers'
+import { CatIcon, IconBack, IconBriefcase, IconCalendar, IconChevron, IconClock, IconPin } from '../components/icons'
 
 function placeLine(item: Item): string {
   if (item.place && item.placeTo) return `${item.place} → ${item.placeTo}`
@@ -69,14 +70,14 @@ export default function TripView() {
 
   return (
     <>
+      <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
       <header className="hero">
-        <div className="hero-sea" />
-        <HeroArt className="hero-art" />
+        <img className="cover-img" src={coverFor(trip).src} alt="" style={{ objectPosition: coverFor(trip).position }} />
+        <div className="cover-fade" />
         <div className="hero-content">
-          <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
           <h1 className="hero-title">{trip.title}</h1>
           {trip.destination && <div className="hero-row"><IconPin /> {trip.destination}</div>}
-          {(trip.startDate || trip.endDate) && <div className="hero-row"><IconCalendar className="ic-blue" /> {formatRange(trip.startDate, trip.endDate)}</div>}
+          {(trip.startDate || trip.endDate) && <div className="hero-row"><IconCalendar className="ic-blue" /> {formatRangeShort(trip.startDate, trip.endDate)}</div>}
           {countdown && <span className={`hero-pill hero-pill-${tripPhase(trip)}`}><IconClock /> {countdown}</span>}
         </div>
       </header>

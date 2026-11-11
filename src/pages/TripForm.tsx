@@ -2,9 +2,10 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { db, newId, type Trip } from '../db'
 import { PageHeader } from '../components/ui'
+import { autoCoverKey, COVERS } from '../covers'
 
-type Draft = Pick<Trip, 'title' | 'destination' | 'startDate' | 'endDate' | 'notes'>
-const EMPTY: Draft = { title: '', destination: '', startDate: '', endDate: '', notes: '' }
+type Draft = Pick<Trip, 'title' | 'destination' | 'startDate' | 'endDate' | 'notes'> & { cover: string }
+const EMPTY: Draft = { title: '', destination: '', startDate: '', endDate: '', notes: '', cover: '' }
 
 export default function TripForm() {
   const { id } = useParams()
@@ -12,12 +13,13 @@ export default function TripForm() {
   const [draft, setDraft] = useState<Draft>(EMPTY)
   const [loaded, setLoaded] = useState(!id)
   const [error, setError] = useState('')
+  const [newTripId] = useState(() => newId())
 
   useEffect(() => {
     if (!id) return
     db.trips.get(id).then((t) => {
       if (!t) return navigate('/trips', { replace: true })
-      setDraft({ title: t.title, destination: t.destination, startDate: t.startDate, endDate: t.endDate, notes: t.notes })
+      setDraft({ title: t.title, destination: t.destination, startDate: t.startDate, endDate: t.endDate, notes: t.notes, cover: t.cover ?? '' })
       setLoaded(true)
     })
   }, [id, navigate])
@@ -36,7 +38,7 @@ export default function TripForm() {
       await db.trips.update(id, { ...clean, updatedAt: now })
       navigate(`/trips/${id}`, { replace: true })
     } else {
-      const tripId = newId()
+      const tripId = newTripId
       await db.trips.add({ id: tripId, ...clean, createdAt: now, updatedAt: now })
       navigate(`/trips/${tripId}`, { replace: true })
     }
@@ -71,6 +73,28 @@ export default function TripForm() {
           <span>Заметки</span>
           <textarea rows={4} value={draft.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Что взять, важные контакты, идеи" />
         </label>
+        <div className="field">
+          <span>Обложка</span>
+          <div className="cover-picker">
+            {(() => {
+              const auto = COVERS.find((c) => c.key === autoCoverKey({ id: id ?? newTripId, title: draft.title, destination: draft.destination }))!
+              return (
+                <button type="button" className={`cover-opt ${draft.cover === '' ? 'cover-opt-active' : ''}`} onClick={() => set('cover', '')}>
+                  <img src={auto.src} alt="" style={{ objectPosition: auto.position }} />
+                  <span>✨ Авто: {auto.label}</span>
+                </button>
+              )
+            })()}
+            {COVERS.map((c) => (
+              <button type="button" key={c.key} className={`cover-opt ${draft.cover === c.key ? 'cover-opt-active' : ''}`} onClick={() => set('cover', c.key)}>
+                <img src={c.src} alt="" loading="lazy" style={{ objectPosition: c.position }} />
+                <span>{c.label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="hint-text hint-tight">«Авто» подбирает обложку по направлению поездки.</p>
+        </div>
+
         {error && <div className="error">{error}</div>}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary">{id ? 'Сохранить' : 'Создать поездку'}</button>

@@ -426,15 +426,49 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .avatar { background: linear-gradient(180deg, #3b82f6, #1d4ed8); }
 .banner { border-radius: 16px; }
 
-/* Море на всю ширину: на широких экранах иллюстрация не растягивается */
-.hero-sea { position: absolute; left: 0; right: 0; bottom: 0; height: 21%; background: linear-gradient(180deg, #8dccf6, #d9f0ff); }
-.hero-content { max-width: 78%; }
-.trip-card-body { max-width: 80%; }
-.trip-card-art { width: auto; aspect-ratio: 400 / 240; max-width: 70%; }
-.trip-card .hero-sea { height: 22%; }
-@media (min-width: 768px) {
-  .hero-art { width: auto; aspect-ratio: 400 / 240; max-width: none; right: 0; }
-  .hero-sea { height: 22%; }
-  .hero-content { max-width: 55%; }
-}
 @media (min-width: 768px) { .nav-item { font-size: 0.98rem; } }
+
+/* ---------- Фото-обложки поездок ---------- */
+.hero-back { margin: 0 0 10px; background: var(--surface); box-shadow: var(--shadow); }
+.hero {
+  margin: 0 0 18px;
+  padding: 0;
+  min-height: 0;
+  aspect-ratio: 2 / 1;
+  border-radius: 24px;
+  background: #dbeafe;
+  box-shadow: var(--shadow);
+}
+.hero::after { display: none; }
+.cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cover-fade {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.82) 30%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0) 72%);
+}
+.hero-content { position: relative; z-index: 1; height: 100%; justify-content: center; gap: 5px; padding: 14px 16px; max-width: 72%; }
+.hero-title { font-size: 1.55rem; margin: 0 0 2px; }
+.hero-row { font-size: 0.92rem; gap: 7px; }
+.hero-pill { font-size: 0.84rem; padding: 5px 11px 5px 7px; margin-top: 4px; }
+@media (min-width: 768px) {
+  .hero { aspect-ratio: 3 / 1; margin: 0 0 22px; padding: 0; border-radius: 24px; }
+  .hero-content { padding: 24px 32px; max-width: 55%; gap: 8px; }
+  .hero-title { font-size: 2.3rem; }
+  .hero-row { font-size: 1.05rem; }
+  .hero-pill { font-size: 0.92rem; padding: 7px 14px 7px 9px; }
+}
+
+.trip-card { aspect-ratio: 2 / 1; min-height: 0; background: #dbeafe; border-radius: 24px; }
+.trip-card-body { height: 100%; justify-content: center; padding: 14px 16px; max-width: 74%; gap: 4px; }
+.trip-card-title { font-size: 1.25rem; }
+@media (min-width: 768px) { .trip-card { aspect-ratio: 3 / 1; } .trip-card-body { padding: 20px 26px; max-width: 58%; } }
+@media (min-width: 1100px) { .trip-card { aspect-ratio: 2.4 / 1; } }
+
+/* ---------- Выбор обложки ---------- */
+.cover-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (min-width: 768px) { .cover-picker { grid-template-columns: repeat(3, 1fr); max-width: 600px; } }
+.cover-opt { display: flex; flex-direction: column; gap: 4px; padding: 0; border: none; background: none; cursor: pointer; font: inherit; text-align: left; }
+.cover-opt img { width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 12px; outline: 2px solid transparent; outline-offset: 2px; }
+.cover-opt span { font-size: 0.8rem; color: var(--muted); }
+.cover-opt-active img { outline-color: var(--primary); }
+.cover-opt-active span { color: var(--primary); font-weight: 600; }
+.hint-tight { margin: 4px 0 0; }

@@ -63,3 +63,17 @@ export function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`
   return `${(bytes / 1024 / 1024).toFixed(1)} МБ`
 }
+
+/** Короткий диапазон для обложки: «6–10 дек. 2026», «28 нояб. – 3 дек. 2026». */
+export function formatRangeShort(start: string, end: string): string {
+  const a = start || end
+  const b = end || start
+  if (!a) return ''
+  const [ya, ma, da] = a.split('-').map(Number)
+  const [yb, mb, db] = b.split('-').map(Number)
+  const mon = (y: number, m: number) => new Date(y, m - 1, 1).toLocaleDateString('ru-RU', { month: 'short' })
+  if (a === b) return `${da} ${mon(ya, ma)} ${ya}`
+  if (ya === yb && ma === mb) return `${da}–${db} ${mon(ya, ma)} ${ya}`
+  if (ya === yb) return `${da} ${mon(ya, ma)} – ${db} ${mon(yb, mb)} ${yb}`
+  return `${da} ${mon(ya, ma)} ${ya} – ${db} ${mon(yb, mb)} ${yb}`
+}

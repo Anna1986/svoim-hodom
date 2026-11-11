@@ -4,6 +4,8 @@ import { db, type Trip } from '../db'
 import { formatRange } from '../format'
 import { tripCountdown, tripPhase, type Phase } from '../trip'
 import { Empty, Fab, PageHeader } from '../components/ui'
+import { SyncLine } from '../components/Account'
+import { useSyncState } from '../sync'
 
 const SECTIONS: { phase: Phase; title: string }[] = [
   { phase: 'current', title: 'Сейчас' },
@@ -31,6 +33,7 @@ function TripCard({ t }: { t: Trip }) {
 
 export default function TripsList() {
   const trips = useLiveQuery(() => db.trips.toArray(), [])
+  const sync = useSyncState()
   if (!trips) return null
 
   return (
@@ -38,6 +41,10 @@ export default function TripsList() {
       <PageHeader title="Поездки">
         <Link to="/trips/new" className="btn btn-primary hide-mobile">+ Новая поездка</Link>
       </PageHeader>
+      {sync.ready && !sync.user && (
+        <Link to="/settings" className="banner">☁️ Войдите, чтобы поездки были одинаковыми на телефоне и компьютере →</Link>
+      )}
+      {sync.user && <div className="sync-top"><SyncLine /></div>}
 
       {trips.length === 0 ? (
         <Empty icon="🧳">

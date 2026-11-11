@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
 import { requestPersistentStorage } from './db'
+import { initSync } from './sync'
 import './styles.css'
 
 requestPersistentStorage()
+initSync()
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {

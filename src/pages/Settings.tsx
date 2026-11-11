@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { exportBackup, importBackup } from '../backup'
 import { formatSize } from '../format'
 import { PageHeader } from '../components/ui'
+import { AccountSection } from '../components/Account'
+import { useSyncState } from '../sync'
 
 export default function Settings() {
   const [usage, setUsage] = useState<string>('')
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
+  const sync = useSyncState()
 
   useEffect(() => {
     navigator.storage?.estimate?.().then((e) => e.usage !== undefined && setUsage(formatSize(e.usage))).catch(() => {})
@@ -53,17 +56,21 @@ export default function Settings() {
     <>
       <PageHeader title="Настройки" />
 
+      <AccountSection />
+
       <section className="section">
         <h2>Где хранятся данные</h2>
         <p className="muted">
-          Всё хранится только на этом устройстве, в браузере, и доступно без интернета. На другом телефоне или компьютере данных не будет — перенести их можно через резервную копию.
+          {sync.user
+            ? 'Копия всех данных хранится на этом устройстве, поэтому приложение работает без интернета. Изменения отправляются в облако, как только появляется связь. Ваши записи и файлы доступны только вам.'
+            : 'Сейчас всё хранится только на этом устройстве, в браузере, и доступно без интернета. Чтобы данные были и на других устройствах — войдите в аккаунт.'}
         </p>
         {usage && <p className="muted small">Занято: {usage}{persisted !== null && (persisted ? ' · защищено от автоочистки' : '')}</p>}
       </section>
 
       <section className="section">
         <h2>Резервная копия</h2>
-        <p className="muted">Сохраните копию перед поездкой — например, в «Файлы», Google Диск или себе в мессенджер. Если браузер очистит данные, всё можно будет восстановить.</p>
+        <p className="muted">Дополнительная копия в файле — на всякий случай. Можно сохранить в «Файлы», Google Диск или себе в мессенджер.</p>
         <div className="form-actions">
           <button className="btn btn-primary" onClick={doExport} disabled={busy}>Сохранить копию</button>
           <label className={`btn ${busy ? 'disabled' : ''}`}>

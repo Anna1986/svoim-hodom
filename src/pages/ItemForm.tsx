@@ -4,6 +4,7 @@ import { addAttachments, CATEGORIES, CATEGORY_ORDER, db, newId, type Category, t
 import { PageHeader } from '../components/ui'
 import { PendingFiles } from '../components/Attachments'
 import { CatIcon } from '../components/icons'
+import { fitTripToTickets } from '../trip'
 
 type Draft = Omit<Item, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
 
@@ -65,11 +66,13 @@ export default function ItemForm() {
     try {
       if (itemId) {
         await db.items.update(itemId, { ...clean, updatedAt: now })
+        await fitTripToTickets(tripId)
         navigate(`/items/${itemId}`, { replace: true })
       } else {
         const newItemId = newId()
         await db.items.add({ id: newItemId, tripId, ...clean, createdAt: now, updatedAt: now })
         if (files.length) await addAttachments('item', newItemId, files)
+        await fitTripToTickets(tripId)
         navigate(`/items/${newItemId}`, { replace: true })
       }
     } catch (err) {

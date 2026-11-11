@@ -2,7 +2,8 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
 import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
-import { buildPlan, passportWarnings, tripCountdown, tripPhase } from '../trip'
+import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
+import { useEffect } from 'react'
 import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconBriefcase, IconCalendar, IconChevron, IconClock, IconPin } from '../components/icons'
@@ -48,6 +49,13 @@ export default function TripView() {
     return counts
   }, [id])
   const docs = useLiveQuery(() => db.docs.toArray(), [])
+
+  // Билеты могли прийти с другого устройства или появиться раньше этой функции — подгоняем даты.
+  useEffect(() => {
+    if (!trip || !items) return
+    const next = fittedDates(trip, items)
+    if (next.startDate !== trip.startDate || next.endDate !== trip.endDate) void fitTripToTickets(trip.id)
+  }, [trip, items])
 
   if (trip === undefined || !items || !fileCounts || !docs) return null
   if (trip === null) {

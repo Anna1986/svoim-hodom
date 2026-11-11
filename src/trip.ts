@@ -1,4 +1,4 @@
-import { CATEGORIES, type Doc, type Item, type Trip } from './db'
+import { CATEGORIES, db, type Doc, type Item, type Trip } from './db'
 import { daysBetween, daysUntil, days, todayISO } from './format'
 
 export type Phase = 'current' | 'upcoming' | 'past' | 'undated'
@@ -100,4 +100,34 @@ export function passportWarnings(trip: Trip, docs: Doc[]): string[] {
       return new Date(ey, em - 1, ed) < limit
     })
     .map((doc) => `${doc.title || 'Загранпаспорт'}${doc.holder ? ` (${doc.holder})` : ''} действует меньше 6 месяцев после окончания поездки. Многие страны этого не допускают — проверьте требования.`)
+}
+
+/* ---------- Даты поездки по билетам ---------- */
+
+const isTicket = (i: Item) => (i.category === 'flight' || i.category === 'transport') && Boolean(i.startDate)
+
+/**
+ * Если билеты на самолёт или поезд выходят за даты поездки, расширяем поездку:
+ * начало — не позже первого отправления, конец — не раньше последнего прибытия.
+ * Даты только расширяются: если билеты внутри плана, план не меняется.
+ */
+export function fittedDates(trip: Pick<Trip, 'startDate' | 'endDate'>, items: Item[]): { startDate: string; endDate: string } {
+  const tickets = items.filter(isTicket)
+  if (!tickets.length) return { startDate: trip.startDate, endDate: trip.endDate }
+  const first = tickets.map((t) => t.startDate).sort()[0]
+  const last = tickets.map((t) => t.endDate || t.startDate).sort().at(-1)!
+  return {
+    startDate: !trip.startDate || first < trip.startDate ? first : trip.startDate,
+    endDate: !trip.endDate || last > trip.endDate ? last : trip.endDate,
+  }
+}
+
+export async function fitTripToTickets(tripId: string) {
+  const trip = await db.trips.get(tripId)
+  if (!trip) return
+  const items = await db.items.where('tripId').equals(tripId).toArray()
+  const next = fittedDates(trip, items)
+  if (next.startDate !== trip.startDate || next.endDate !== trip.endDate) {
+    await db.trips.update(tripId, { ...next, updatedAt: Date.now() })
+  }
 }

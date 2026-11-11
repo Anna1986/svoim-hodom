@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { CATEGORIES, CATEGORY_ORDER, type Item } from '../db'
+import { CATEGORIES, type Item } from '../db'
 import { coverFor } from '../covers'
 import { fetchShared, type SharedFile, type SharedTrip as Shared } from '../share'
 import { formatDateTime, formatDay, formatRangeShort, formatSize, todayISO } from '../format'
@@ -133,20 +133,16 @@ export default function SharedTrip() {
 
       {items.length === 0 && <Empty icon="🗺️"><p>В поездке пока нет броней.</p></Empty>}
 
-      {tab === 'items' && CATEGORY_ORDER.map((c) => {
-        const list = items.filter((i) => i.category === c).sort((a, b) => (a.startDate + a.startTime).localeCompare(b.startDate + b.startTime))
-        if (!list.length) return null
-        return (
-          <section key={c} className="shared-group">
-            <h2 className="folder-heading"><CatIcon c={c} size={32} /> {CATEGORIES[c].label}</h2>
-            <div className="rows">
-              {list.map((it) => (
-                <ItemCard key={it.id} item={it} files={filesOf(it.id)} open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)} />
-              ))}
-            </div>
-          </section>
-        )
-      })}
+      {tab === 'items' && items.length > 0 && (
+        <div className="rows">
+          {[...items]
+            // По датам по возрастанию; записи без даты — в конце
+            .sort((a, b) => (a.startDate ? a.startDate + (a.startTime || '99:99') : '9999').localeCompare(b.startDate ? b.startDate + (b.startTime || '99:99') : '9999'))
+            .map((it) => (
+              <ItemCard key={it.id} item={it} files={filesOf(it.id)} open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)} />
+            ))}
+        </div>
+      )}
 
       {tab === 'plan' && items.length > 0 && (
         <div className="plan">

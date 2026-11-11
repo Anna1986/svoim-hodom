@@ -9,24 +9,6 @@
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./icon-192.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <!-- ВРЕМЕННО: проверка Travelpayouts Drive. Скрипт загружается только у «чистого» посетителя
-         без данных приложения (например, в приватной вкладке), чтобы не получить доступ к вашим данным.
-         Удалить после подтверждения в кабинете Travelpayouts. -->
-    <script>
-      (function () {
-        try {
-          var used = Object.keys(localStorage).some(function (k) {
-            return k.indexOf('sb-') === 0 || k.indexOf('sync:') === 0 || k.indexOf('explore:') === 0
-          })
-          if (used) return
-          var s = document.createElement('script')
-          s.async = 1
-          s.setAttribute('data-cmp-ab', '2')
-          s.src = 'https://tp-em.com/NTk5Mzg3.js?t=599387'
-          document.head.appendChild(s)
-        } catch (e) {}
-      })()
-    </script>
     <title>Путешествия — все брони и документы в одном месте</title>
   </head>
   <body>

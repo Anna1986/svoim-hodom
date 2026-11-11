@@ -35,8 +35,10 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Страницу и прочие файлы без хеша всегда сверяем с сервером (GitHub Pages кэширует их на 10 минут),
+  // чтобы обновления приложения появлялись сразу
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' })
       .then((res) => {
         if (res.ok) {
           const copy = res.clone()

@@ -20,7 +20,7 @@ export async function exportBackup(): Promise<File> {
   )
   const json = JSON.stringify({ format: FORMAT, version: 1, exportedAt: new Date().toISOString(), trips, items, docs, attachments: files })
   const date = new Date().toISOString().slice(0, 10)
-  return new File([json], `puteshestviya-${date}.json`, { type: 'application/json' })
+  return new File([json], `svoim-hodom-${date}.json`, { type: 'application/json' })
 }
 
 export async function importBackup(file: File): Promise<{ trips: number; items: number; docs: number; files: number }> {

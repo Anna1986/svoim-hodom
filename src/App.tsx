@@ -37,7 +37,7 @@ export default function App() {
   return (
     <div className="app">
       <nav className="nav">
-        <Link to="/trips" className="nav-brand" aria-label="На главную — мои поездки"><IconSuitcase size={26} /> Путешествия</Link>
+        <Link to="/trips" className="nav-brand" aria-label="На главную — мои поездки"><IconSuitcase size={26} /> Своим ходом</Link>
         <NavLink to="/settings" className="nav-account">
           {sync.user ? <AccountBadge /> : <span className="nav-login"><Avatar size={36} /> Войти в кабинет</span>}
         </NavLink>

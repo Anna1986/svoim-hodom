@@ -78,7 +78,7 @@ export default function SharedTrip() {
       <div className="shared-page">
         <Empty icon="🔒">
           <p>{err || 'Ссылка недействительна: её отозвали или поездку удалили.'}</p>
-          <a href={location.pathname} className="btn">Открыть приложение «Путешествия»</a>
+          <a href={location.pathname} className="btn">Открыть приложение «Своим ходом»</a>
         </Empty>
       </div>
     )
@@ -173,7 +173,7 @@ export default function SharedTrip() {
       )}
 
       <p className="shared-footer muted small">
-        Сделано в приложении <a href={location.pathname} className="link">«Путешествия»</a>
+        Сделано в приложении <a href={location.pathname} className="link">«Своим ходом»</a>
       </p>
     </div>
   )

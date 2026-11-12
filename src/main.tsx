@@ -4,8 +4,11 @@ import { HashRouter } from 'react-router-dom'
 import App from './App'
 import { requestPersistentStorage } from './db'
 import { initSync } from './sync'
+import { handleAuthRedirect } from './supabase'
 import './styles.css'
 
+// Ссылки из писем (сброс пароля, подтверждение почты) — до отрисовки приложения
+handleAuthRedirect()
 requestPersistentStorage()
 initSync()
 

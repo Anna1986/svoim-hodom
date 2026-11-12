@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { signIn, signOut, signUp, syncNow, updateName, useSyncState, type SyncState } from '../sync'
+import { Link, useSearchParams } from 'react-router-dom'
+import { sendPasswordReset, signIn, signOut, signUp, syncNow, updateName, useSyncState, type SyncState } from '../sync'
 
 function ago(ts: number): string {
   const s = Math.round((Date.now() - ts) / 1000)
@@ -81,7 +82,8 @@ function NameEditor({ current }: { current: string }) {
 
 export function AccountSection() {
   const s = useSyncState()
-  const [mode, setMode] = useState<'in' | 'up'>('in')
+  const [params] = useSearchParams()
+  const [mode, setMode] = useState<'in' | 'up' | 'forgot'>(params.get('forgot') ? 'forgot' : 'in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -91,6 +93,15 @@ export function AccountSection() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setErr(''); setMsg('')
+    if (mode === 'forgot') {
+      if (!email.trim()) return setErr('Введите почту, на которую зарегистрирован аккаунт')
+      setBusy(true)
+      const error = await sendPasswordReset(email.trim())
+      setBusy(false)
+      if (error) setErr(error)
+      else setMsg('Письмо со ссылкой для нового пароля отправлено. Откройте его на этом же устройстве и нажмите ссылку. Если письма нет пару минут — проверьте «Спам».')
+      return
+    }
     if (!email.trim() || !password) return setErr('Введите почту и пароль')
     setBusy(true)
     try {
@@ -127,6 +138,7 @@ export function AccountSection() {
         <p className="muted small">Ваши поездки, документы и файлы одинаковые на всех устройствах, где вы вошли в этот аккаунт.</p>
         <div className="form-actions">
           <button className="btn btn-primary" onClick={() => syncNow()} disabled={s.syncing}>Синхронизировать</button>
+          <Link to="/reset-password" className="btn">Сменить пароль</Link>
           <button className="btn" onClick={() => { if (window.confirm('Выйти из аккаунта? Данные останутся на этом устройстве, но перестанут синхронизироваться.')) signOut() }}>Выйти</button>
         </div>
       </section>
@@ -135,27 +147,36 @@ export function AccountSection() {
 
   return (
     <section className="section" id="account">
-      <h2>Вход в личный кабинет</h2>
+      <h2>{mode === 'forgot' ? 'Восстановление пароля' : 'Вход в личный кабинет'}</h2>
+      {mode !== 'forgot' && (
+        <>
       <p className="muted">Войдите, чтобы на телефоне и компьютере были одни и те же поездки, документы и файлы. На каждом устройстве нужно войти один раз.</p>
       <div className="tabs tabs-small">
         <button className={`tab ${mode === 'in' ? 'tab-active' : ''}`} onClick={() => { setMode('in'); setErr('') }}>Вход</button>
         <button className={`tab ${mode === 'up' ? 'tab-active' : ''}`} onClick={() => { setMode('up'); setErr('') }}>Регистрация</button>
       </div>
+        </>
+      )}
       <form className="form" onSubmit={onSubmit} noValidate>
         <label className="field">
           <span>Почта</span>
           <input type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
-        <label className="field">
-          <span>Пароль{mode === 'up' && ' (не короче 6 символов)'}</span>
-          <input type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
+        {mode !== 'forgot' && (
+          <label className="field">
+            <span>Пароль{mode === 'up' && ' (не короче 6 символов)'}</span>
+            <input type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+        )}
+        {mode === 'forgot' && <p className="muted small">Пришлём на почту ссылку — по ней вы зададите новый пароль. Поездки и документы сохранятся.</p>}
         {err && <div className="error">{err}</div>}
         {msg && <p className="notice">{msg}</p>}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={busy}>
-            {busy ? 'Подождите…' : mode === 'in' ? 'Войти' : 'Создать аккаунт'}
+            {busy ? 'Подождите…' : mode === 'in' ? 'Войти' : mode === 'up' ? 'Создать аккаунт' : 'Прислать ссылку'}
           </button>
+          {mode === 'in' && <button type="button" className="link-btn" onClick={() => { setMode('forgot'); setErr(''); setMsg('') }}>Забыли пароль?</button>}
+          {mode === 'forgot' && <button type="button" className="link-btn" onClick={() => { setMode('in'); setErr(''); setMsg('') }}>← Ко входу</button>}
         </div>
       </form>
     </section>

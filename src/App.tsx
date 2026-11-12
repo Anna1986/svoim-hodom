@@ -13,6 +13,7 @@ import { useSyncState } from './sync'
 import { IconCompass, IconDoc, IconSuitcase, IconUser } from './components/icons'
 import Explore from './pages/Explore'
 import SharedTrip from './pages/SharedTrip'
+import ResetPassword from './pages/ResetPassword'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="/docs/:id" element={<DocView />} />
           <Route path="/docs/:id/edit" element={<DocForm />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="*" element={<Navigate to="/trips" replace />} />
         </Routes>

@@ -10,7 +10,7 @@
 import Dexie, { type Table, type Transaction } from 'dexie'
 import { useSyncExternalStore } from 'react'
 import { db, type Attachment } from './db'
-import { FILES_BUCKET, supabase } from './supabase'
+import { appRootUrl, FILES_BUCKET, supabase } from './supabase'
 
 type Kind = 'trip' | 'item' | 'doc' | 'attachment'
 const KINDS: Kind[] = ['trip', 'item', 'doc', 'attachment']
@@ -284,6 +284,11 @@ export async function updateName(name: string): Promise<string> {
   if (error) return humanError(error)
   if (data.user && state.user) setState({ user: { ...state.user, name: String(data.user.user_metadata?.name ?? '') } })
   return ''
+}
+
+export async function sendPasswordReset(email: string): Promise<string> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: appRootUrl() })
+  return error ? humanError(error) : ''
 }
 
 export async function signOut() {

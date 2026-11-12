@@ -580,3 +580,5 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .row-body .event-label { font-size: 0.72rem; }
 .type-chip { font-size: 0.84rem; gap: 5px; padding: 0 8px; white-space: nowrap; overflow: hidden; }
 .type-chip-icon { font-size: 1rem; }
+.nav-brand { text-decoration: none; cursor: pointer; }
+.nav-brand:hover { opacity: 0.85; }

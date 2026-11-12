@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import TripsList from './pages/TripsList'
 import TripForm from './pages/TripForm'
 import TripView from './pages/TripView'
@@ -37,7 +37,7 @@ export default function App() {
   return (
     <div className="app">
       <nav className="nav">
-        <div className="nav-brand"><IconSuitcase size={26} /> Путешествия</div>
+        <Link to="/trips" className="nav-brand" aria-label="На главную — мои поездки"><IconSuitcase size={26} /> Путешествия</Link>
         <NavLink to="/settings" className="nav-account">
           {sync.user ? <AccountBadge /> : <span className="nav-login"><Avatar size={36} /> Войти в кабинет</span>}
         </NavLink>

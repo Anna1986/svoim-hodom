@@ -1,4 +1,4 @@
-import { CATEGORIES, db, type Doc, type Item, type Trip } from './db'
+import { CATEGORIES, db, eventTypeOf, type Doc, type Item, type Trip } from './db'
 import { daysBetween, daysUntil, days, todayISO } from './format'
 
 export type Phase = 'current' | 'upcoming' | 'past' | 'undated'
@@ -59,7 +59,7 @@ export function buildPlan(items: Item[]): { byDay: [string, PlanEvent[]][]; unda
         date: item.startDate,
         time: item.startTime,
         timeEnd: sameDay ? item.endTime : '',
-        label: cfg.start === 'Дата' || cfg.start === 'Начало' ? '' : cfg.start,
+        label: eventTypeOf(item) ? `${eventTypeOf(item)!.icon} ${eventTypeOf(item)!.label}` : cfg.start === 'Дата' || cfg.start === 'Начало' ? '' : cfg.start,
         item,
       })
     } else {

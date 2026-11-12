@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { CATEGORIES, type Item } from '../db'
+import { CATEGORIES, eventTypeOf, type Item } from '../db'
 import { coverFor } from '../covers'
 import { fetchShared, type SharedFile, type SharedTrip as Shared } from '../share'
 import { formatDateTime, formatDay, formatRangeShort, formatSize, todayISO } from '../format'
@@ -21,6 +21,7 @@ function ItemCard({ item, files, open, onToggle }: { item: Item; files: SharedFi
       <button className="row shared-row" onClick={onToggle}>
         <CatIcon c={item.category} size={44} />
         <span className="row-body">
+          {eventTypeOf(item) && <span className="event-label">{eventTypeOf(item)!.icon} {eventTypeOf(item)!.label}</span>}
           <span className="row-title">{item.title}</span>
           {placeLine(item) && <span className="row-sub">{placeLine(item)}</span>}
           {item.startDate && <span className="row-sub">{formatDateTime(item.startDate, item.startTime)}</span>}

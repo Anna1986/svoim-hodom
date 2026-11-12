@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { addAttachments, CATEGORIES, CATEGORY_ORDER, db, newId, type Category, type Item } from '../db'
+import { addAttachments, CATEGORIES, CATEGORY_ORDER, db, EVENT_TYPE_ORDER, EVENT_TYPES, newId, type Category, type EventType, type Item } from '../db'
 import { PageHeader } from '../components/ui'
 import { PendingFiles } from '../components/Attachments'
 import { CatIcon } from '../components/icons'
@@ -59,6 +59,7 @@ export default function ItemForm() {
       endDate: cfg.end ? draft.endDate : '',
       endTime: cfg.end && cfg.withTime ? draft.endTime : '',
       bookingRef: cfg.ref ? draft.bookingRef.trim() : '',
+      eventType: draft.category === 'voucher' ? draft.eventType : undefined,
       link: draft.link.trim(),
       notes: draft.notes.trim(),
     }
@@ -98,9 +99,22 @@ export default function ItemForm() {
           </label>
         )}
 
+        {draft.category === 'voucher' && (
+          <div className="field">
+            <span>Что это</span>
+            <div className="type-chips">
+              {EVENT_TYPE_ORDER.map((t) => (
+                <button type="button" key={t} className={`type-chip ${draft.eventType === t ? 'type-chip-active' : ''}`} onClick={() => set('eventType', t as EventType)}>
+                  <span className="type-chip-icon">{EVENT_TYPES[t].icon}</span>{EVENT_TYPES[t].label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <label className="field">
           <span>Название *</span>
-          <input value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder={cfg.titlePlaceholder} autoFocus={!itemId} />
+          <input value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder={draft.category === 'voucher' && draft.eventType ? EVENT_TYPES[draft.eventType].placeholder : cfg.titlePlaceholder} autoFocus={!itemId} />
         </label>
 
         {(cfg.place || cfg.placeTo) && (

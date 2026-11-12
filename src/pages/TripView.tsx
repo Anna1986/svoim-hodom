@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, type Category, type Item } from '../db'
+import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, eventTypeOf, type Category, type Item } from '../db'
 import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
 import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
 import { useEffect, useState } from 'react'
@@ -25,6 +25,7 @@ function ItemRow({ item, fileCount }: { item: Item; fileCount: number }) {
     <Link to={`/items/${item.id}`} className="row">
       <CatIcon c={item.category} size={44} className="row-img" />
       <span className="row-body">
+        {eventTypeOf(item) && <span className="event-label">{eventTypeOf(item)!.icon} {eventTypeOf(item)!.label}</span>}
         <span className="row-title">{item.title}</span>
         {placeLine(item) && <span className="row-sub">{placeLine(item)}</span>}
         {when && <span className="row-sub">{when}</span>}

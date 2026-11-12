@@ -68,10 +68,10 @@ export const CATEGORIES: Record<Category, CategoryConfig> = {
     titlePlaceholder: 'Например, Sixt, Toyota Corolla',
   },
   voucher: {
-    label: 'События и экскурсии', one: 'Событие', add: 'событие', icon: '🎟️',
-    start: 'Начало', end: 'Окончание', place: 'Место встречи', placeTo: '',
-    ref: 'Номер билета или ваучера', withTime: true, inPlan: true,
-    titlePlaceholder: 'Например, Экскурсия в Ватикан',
+    label: 'События', one: 'Событие', add: 'событие', icon: '🎟️',
+    start: 'Начало', end: 'Окончание', place: 'Место или адрес', placeTo: '',
+    ref: 'Номер билета или брони', withTime: true, inPlan: true,
+    titlePlaceholder: 'Например, Большой театр — «Щелкунчик»',
   },
   visa: {
     label: 'Визы', one: 'Виза', add: 'визу', icon: '🛂',
@@ -101,6 +101,35 @@ export const CATEGORIES: Record<Category, CategoryConfig> = {
 
 export const CATEGORY_ORDER = Object.keys(CATEGORIES) as Category[]
 
+/* ---------- Виды событий ---------- */
+
+export type EventType =
+  | 'tour' | 'museum' | 'theatre' | 'concert' | 'show' | 'restaurant'
+  | 'cafe' | 'bar' | 'party' | 'sport' | 'spa' | 'other'
+
+export const EVENT_TYPES: Record<EventType, { label: string; icon: string; placeholder: string }> = {
+  tour: { label: 'Экскурсия', icon: '🚶', placeholder: 'Например, Обзорная экскурсия по центру' },
+  museum: { label: 'Музей', icon: '🏛️', placeholder: 'Например, Третьяковская галерея' },
+  theatre: { label: 'Театр', icon: '🎭', placeholder: 'Например, Большой театр — «Щелкунчик»' },
+  concert: { label: 'Концерт', icon: '🎵', placeholder: 'Например, Концерт в Зарядье' },
+  show: { label: 'Шоу', icon: '🎪', placeholder: 'Например, Цирк на Цветном' },
+  restaurant: { label: 'Ресторан', icon: '🍽️', placeholder: 'Например, Ужин в «Пушкине»' },
+  cafe: { label: 'Кафе', icon: '☕', placeholder: 'Например, Завтрак в кофейне' },
+  bar: { label: 'Бар', icon: '🍸', placeholder: 'Например, Коктейльный бар на крыше' },
+  party: { label: 'Вечеринка', icon: '🎉', placeholder: 'Например, AI-Agents party' },
+  sport: { label: 'Спорт', icon: '⚽', placeholder: 'Например, Матч ЦСКА — Спартак' },
+  spa: { label: 'СПА', icon: '💆', placeholder: 'Например, Сандуновские бани' },
+  other: { label: 'Другое', icon: '✨', placeholder: 'Например, Мастер-класс' },
+}
+
+export const EVENT_TYPE_ORDER = Object.keys(EVENT_TYPES) as EventType[]
+
+export function eventTypeOf(item: { category: Category; eventType?: string }) {
+  return item.category === 'voucher' && item.eventType && item.eventType in EVENT_TYPES
+    ? EVENT_TYPES[item.eventType as EventType]
+    : null
+}
+
 export interface Item {
   id: string
   tripId: string
@@ -113,6 +142,7 @@ export interface Item {
   endDate: string
   endTime: string
   bookingRef: string
+  eventType?: EventType // только для событий
   link: string
   notes: string
   createdAt: number

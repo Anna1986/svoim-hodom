@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CATEGORIES, db, deleteItem } from '../db'
+import { CATEGORIES, db, deleteItem, eventTypeOf } from '../db'
 import { formatDateTime } from '../format'
 import { CopyValue, Empty, Linkify, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
@@ -31,7 +31,7 @@ export default function ItemView() {
   return (
     <>
       <PageHeader title={item.title} back={tripBack} backLabel={`← ${trip?.title ?? 'Поездка'}`} />
-      <div className="kind-label"><CatIcon c={item.category} size={36} /> {cfg.one}</div>
+      <div className="kind-label"><CatIcon c={item.category} size={36} /> {eventTypeOf(item) ? `${eventTypeOf(item)!.icon} ${eventTypeOf(item)!.label}` : cfg.one}</div>
 
       <dl className="details">
         {item.place && cfg.place && (

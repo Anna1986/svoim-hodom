@@ -4,6 +4,7 @@ import { formatSize } from '../format'
 import { PageHeader } from '../components/ui'
 import { AccountSection } from '../components/Account'
 import { useSyncState } from '../sync'
+import { setMapProvider, useMapProvider } from '../geo'
 
 export default function Settings() {
   const [usage, setUsage] = useState<string>('')
@@ -11,6 +12,7 @@ export default function Settings() {
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
   const sync = useSyncState()
+  const mapProvider = useMapProvider()
 
   useEffect(() => {
     navigator.storage?.estimate?.().then((e) => e.usage !== undefined && setUsage(formatSize(e.usage))).catch(() => {})
@@ -66,6 +68,15 @@ export default function Settings() {
             : 'Сейчас всё хранится только на этом устройстве, в браузере, и доступно без интернета. Чтобы данные были и на других устройствах — войдите в аккаунт.'}
         </p>
         {usage && <p className="muted small">Занято: {usage}{persisted !== null && (persisted ? ' · защищено от автоочистки' : '')}</p>}
+      </section>
+
+      <section className="section">
+        <h2>Карты</h2>
+        <p className="muted">Где открывать места и маршруты из карты поездки.</p>
+        <div className="view-toggle">
+          <button className={mapProvider === 'yandex' ? 'active' : ''} onClick={() => setMapProvider('yandex')}>Яндекс Карты</button>
+          <button className={mapProvider === 'google' ? 'active' : ''} onClick={() => setMapProvider('google')}>Google Карты</button>
+        </div>
       </section>
 
       <section className="section">

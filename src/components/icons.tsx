@@ -12,7 +12,7 @@ import other from '../assets/icons/other.png'
 
 /* ---------- Объёмные иконки папок ---------- */
 
-const CAT_IMG: Record<Category, string> = { flight, transport, hotel, car, voucher, visa, insurance, route, other }
+export const CAT_IMG: Record<Category, string> = { flight, transport, hotel, car, voucher, visa, insurance, route, other }
 
 export function CatIcon({ c, size = 44, className = '' }: { c: Category; size?: number; className?: string }) {
   return <img src={CAT_IMG[c]} width={size} height={size} alt={CATEGORIES[c].one} className={`cat-icon ${className}`} draggable={false} />

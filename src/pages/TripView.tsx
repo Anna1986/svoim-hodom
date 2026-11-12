@@ -3,13 +3,15 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, eventTypeOf, type Category, type Item } from '../db'
 import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
 import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { ShareSheet } from '../components/ShareSheet'
 import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
 import { PlanCalendar } from '../components/PlanCalendar'
 import type { PlanEvent } from '../trip'
+
+const TripMap = lazy(() => import('../components/TripMap'))
 
 function placeLine(item: Item): string {
   if (item.place && item.placeTo) return `${item.place} → ${item.placeTo}`
@@ -41,7 +43,7 @@ export default function TripView() {
   const [params, setParams] = useSearchParams()
   // Слева — «Брони и билеты» (по умолчанию), справа — план
   const tab = params.get('tab') === 'plan' ? 'plan' : 'folders'
-  const view = params.get('view') === 'calendar' ? 'calendar' : 'list'
+  const view = params.get('view') === 'calendar' ? 'calendar' : params.get('view') === 'map' ? 'map' : 'list'
   const folder = params.get('folder') as Category | null
 
   const trip = useLiveQuery(async () => (await db.trips.get(id!)) ?? null, [id])
@@ -131,7 +133,7 @@ export default function TripView() {
         <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>
           <IconTicket size={20} /> Брони и билеты
         </button>
-        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'plan', ...(view === 'calendar' ? { view } : {}) }, { replace: true })}>
+        <button role="tab" className={`tab ${tab === 'plan' ? 'tab-active' : ''}`} onClick={() => setParams({ tab: 'plan', ...(view !== 'list' ? { view } : {}) }, { replace: true })}>
           <IconCalendar size={20} /> План
         </button>
       </div>
@@ -147,8 +149,13 @@ export default function TripView() {
             <div className="view-toggle">
               <button className={view === 'list' ? 'active' : ''} onClick={() => setParams({ tab: 'plan' }, { replace: true })}><IconList /> По дням</button>
               <button className={view === 'calendar' ? 'active' : ''} onClick={() => setParams({ tab: 'plan', view: 'calendar' }, { replace: true })}><IconCalendar size={18} /> Календарь</button>
+              <button className={view === 'map' ? 'active' : ''} onClick={() => setParams({ tab: 'plan', view: 'map' }, { replace: true })}><IconPin /> Карта</button>
             </div>
-            {view === 'calendar' ? (
+            {view === 'map' ? (
+              <Suspense fallback={<p className="muted">Загружаем карту…</p>}>
+                <TripMap trip={trip} items={items} />
+              </Suspense>
+            ) : view === 'calendar' ? (
               <PlanCalendar byDay={byDay} start={trip.startDate} end={trip.endDate} items={items} renderDay={(_, events) => renderEvents(events)} />
             ) : (
               byDay.map(([date, events]) => (
@@ -161,13 +168,13 @@ export default function TripView() {
                 </section>
               ))
             )}
-            {undated.length > 0 && (
+            {view !== 'map' && undated.length > 0 && (
               <section className="day">
                 <h3 className="day-title">Без даты</h3>
                 <div className="rows">{undated.map((it) => <ItemRow key={it.id} item={it} fileCount={fileCounts[it.id] ?? 0} />)}</div>
               </section>
             )}
-            {items.some((i) => !CATEGORIES[i.category].inPlan) && (
+            {view !== 'map' && items.some((i) => !CATEGORIES[i.category].inPlan) && (
               <p className="muted small">Визы и страховки — во вкладке «Брони и билеты».</p>
             )}
           </div>

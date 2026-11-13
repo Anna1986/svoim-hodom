@@ -79,7 +79,7 @@ export default function ResetPassword() {
       <p className="muted lead">Для аккаунта <b className="text">{sync.user.email}</b></p>
       <form className="form" onSubmit={onSubmit} noValidate>
         <label className="field">
-          <span>Новый пароль (не короче 6 символов)</span>
+          <span>Новый пароль (от 8 символов, буквы и цифры)</span>
           <input type="password" autoComplete="new-password" value={password} onChange={(e) => { setPassword(e.target.value); setErr('') }} autoFocus />
         </label>
         <label className="field">

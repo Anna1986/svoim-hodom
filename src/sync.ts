@@ -280,7 +280,18 @@ export async function signIn(email: string, password: string): Promise<string> {
   return error ? humanError(error) : ''
 }
 
+/** Проверка надёжности пароля (защита от утёкших паролей в Supabase — только на платном тарифе). */
+const COMMON = ['12345678', '123456789', '1234567890', 'qwerty123', 'password', 'password1', 'qwertyui', '11111111', '00000000', '87654321', 'iloveyou', 'йцукенгш', 'qwe12345', 'abc12345']
+export function passwordProblem(p: string): string {
+  if (p.length < 8) return 'Пароль должен быть не короче 8 символов'
+  if (!/\d/.test(p) || !/[a-zа-яё]/i.test(p)) return 'В пароле нужны и буквы, и цифры'
+  if (COMMON.includes(p.toLowerCase()) || /^(.)\1+$/.test(p)) return 'Этот пароль слишком простой — его легко подобрать'
+  return ''
+}
+
 export async function signUp(email: string, password: string): Promise<{ error: string; needsConfirm: boolean }> {
+  const weak = passwordProblem(password)
+  if (weak) return { error: weak, needsConfirm: false }
   const { data, error } = await supabase.auth.signUp({
     email, password,
     options: { emailRedirectTo: location.href.split('#')[0] },

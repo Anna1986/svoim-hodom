@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../supabase'
-import { useSyncState } from '../sync'
+import { passwordProblem, useSyncState } from '../sync'
 import { Empty, PageHeader } from '../components/ui'
 
 export default function ResetPassword() {
@@ -22,7 +22,8 @@ export default function ResetPassword() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setErr('')
-    if (password.length < 6) return setErr('Пароль должен быть не короче 6 символов')
+    const weak = passwordProblem(password)
+    if (weak) return setErr(weak)
     if (password !== repeat) return setErr('Пароли не совпадают')
     setBusy(true)
     const { error } = await supabase.auth.updateUser({ password })

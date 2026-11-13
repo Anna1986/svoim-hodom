@@ -164,7 +164,7 @@ export function AccountSection() {
         </label>
         {mode !== 'forgot' && (
           <label className="field">
-            <span>Пароль{mode === 'up' && ' (не короче 6 символов)'}</span>
+            <span>Пароль{mode === 'up' && ' (от 8 символов, буквы и цифры)'}</span>
             <input type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
         )}

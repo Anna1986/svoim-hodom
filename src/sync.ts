@@ -141,14 +141,20 @@ function seedOnce(uid: string) {
 
 async function push(uid: string) {
   const outbox = readOutbox()
+  const unreadable: string[] = []
   for (const [id, { kind, v }] of Object.entries(outbox)) {
     const local = await table(kind).get(id)
     if (local) {
       let data = local
       if (kind === 'attachment') {
         const { blob, ...meta } = local as Attachment
+        // Читаем файл заранее: в Safari сохранённый файл иногда оказывается пустым или недоступным.
+        // Такой файл пропускаем, чтобы он не мешал отправке остального.
+        let body: ArrayBuffer | null = null
+        try { body = await blob.arrayBuffer() } catch { body = null }
+        if (!body || body.byteLength === 0) { unreadable.push(meta.name); continue }
         const up = await supabase.storage.from(FILES_BUCKET)
-          .upload(`${uid}/${id}`, blob, { upsert: true, contentType: meta.mime || 'application/octet-stream' })
+          .upload(`${uid}/${id}`, new Blob([body], { type: meta.mime || 'application/octet-stream' }), { upsert: true, contentType: meta.mime || 'application/octet-stream' })
         if (up.error) throw up.error
         data = meta
       }
@@ -165,6 +171,9 @@ async function push(uid: string) {
       if (error) throw error
     }
     dequeue(id, v)
+  }
+  if (unreadable.length) {
+    throw new Error(`Файл «${unreadable.join('», «')}» не отправился: на этом устройстве он пустой. Удалите его в записи и прикрепите заново.`)
   }
 }
 
@@ -262,6 +271,7 @@ function humanError(e: unknown): string {
   if (/password should be at least/i.test(msg)) return 'Пароль должен быть не короче 6 символов'
   if (/rate limit/i.test(msg)) return 'Слишком много попыток, подождите немного'
   if (/failed to fetch|network/i.test(msg)) return 'Нет связи с сервером'
+  if (/no content provided/i.test(msg)) return 'Не получилось отправить файл: он пустой. Удалите его в записи и прикрепите заново.'
   return msg
 }
 

@@ -64,13 +64,14 @@ export function Attachments({ ownerType, ownerId }: { ownerType: OwnerType; owne
   const [busy, setBusy] = useState(false)
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = [...(e.target.files ?? [])]
-    e.target.value = ''
+    const input = e.target
+    const files = [...(input.files ?? [])]
     if (!files.length) return
     setBusy(true)
     try {
       await addAttachments(ownerType, ownerId, files)
     } finally {
+      input.value = ''
       setBusy(false)
     }
   }
@@ -111,9 +112,11 @@ export function PendingFiles({ files, onChange }: { files: File[]; onChange: (f:
           type="file"
           multiple
           hidden
-          onChange={(e) => {
-            const picked = [...(e.target.files ?? [])]
-            e.target.value = ''
+          onChange={async (e) => {
+            const input = e.target
+            // копируем в память до сброса поля — иначе Safari может потерять содержимое
+            const picked = await Promise.all([...(input.files ?? [])].map(async (f) => new File([await f.arrayBuffer()], f.name, { type: f.type })))
+            input.value = ''
             onChange([...files, ...picked])
           }}
         />

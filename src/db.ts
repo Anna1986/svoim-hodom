@@ -211,6 +211,9 @@ export function newId(): string {
 
 export async function addAttachments(ownerType: OwnerType, ownerId: string, files: File[]) {
   const now = Date.now()
+  // Копируем содержимое в память: в Safari файл из окна выбора, сохранённый как есть,
+  // позже может читаться пустым.
+  const blobs = await Promise.all(files.map(async (f) => new Blob([await f.arrayBuffer()], { type: f.type || 'application/octet-stream' })))
   await db.attachments.bulkAdd(
     files.map((f, i) => ({
       id: newId(),
@@ -218,8 +221,8 @@ export async function addAttachments(ownerType: OwnerType, ownerId: string, file
       ownerId,
       name: f.name || 'файл',
       mime: f.type || 'application/octet-stream',
-      size: f.size,
-      blob: f,
+      size: blobs[i].size,
+      blob: blobs[i],
       createdAt: now + i,
     })),
   )

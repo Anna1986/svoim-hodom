@@ -45,3 +45,4 @@ theatre: `Электронный билет
 Номер заказа: 99812345`,
 }
 for (const [k,v] of Object.entries(S)) console.log(k, JSON.stringify(parseTicket(v, today), null, 0))
+console.log(parseTicket(`Поезд 102Й\nСАМАРА — МОСКВА КАЗАНСКАЯ ПН\nОтправление 25.11.2026 18:41\nПрибытие 26.11.2026 10:40\nМесто 031`, today))

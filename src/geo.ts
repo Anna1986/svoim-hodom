@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { CATEGORIES, type Category, type Item, type Trip } from './db'
+import { matchAirport, matchStation, prettyStation } from './stations'
 
 /* ---------- Какие карты открывать: Яндекс или Google ---------- */
 
@@ -111,6 +112,7 @@ export interface MapStop {
   dates: string[] // в какие дни показывать
   time: string
   pairKey?: string // точка «откуда» для линии перелёта/переезда
+  known?: LatLng // координаты известны заранее (вокзал, аэропорт)
 }
 
 function daysBetween(a: string, b: string): string[] {
@@ -135,9 +137,14 @@ export function buildStops(trip: Trip, items: Item[]): MapStop[] {
     const start = item.startDate
     const end = item.endDate || item.startDate
     if (item.category === 'flight' || item.category === 'transport') {
-      // города, вокзалы и аэропорты ищем без привязки к городу поездки
-      if (item.place) stops.push({ key: item.id + ':from', item, category: item.category, role: cfg.start, query: item.place, context: '', dates: start ? [start] : [], time: item.startTime })
-      if (item.placeTo) stops.push({ key: item.id + ':to', item, category: item.category, role: cfg.end, query: item.placeTo, context: '', dates: end ? [end] : [], time: item.endTime, pairKey: item.place ? item.id + ':from' : undefined })
+      // вокзалы и аэропорты: сначала по своей таблице, иначе ищем «<город>, вокзал/аэропорт»
+      const flight = item.category === 'flight'
+      const spot = (raw: string) => {
+        const k = flight ? matchAirport(raw) : matchStation(raw)
+        return { query: k?.label ?? (flight ? raw : prettyStation(raw)), context: flight ? 'аэропорт' : 'вокзал', known: k?.ll }
+      }
+      if (item.place) stops.push({ key: item.id + ':from', item, category: item.category, role: cfg.start, ...spot(item.place), dates: start ? [start] : [], time: item.startTime })
+      if (item.placeTo) stops.push({ key: item.id + ':to', item, category: item.category, role: cfg.end, ...spot(item.placeTo), dates: end ? [end] : [], time: item.endTime, pairKey: item.place ? item.id + ':from' : undefined })
       continue
     }
     if (item.category === 'car') {

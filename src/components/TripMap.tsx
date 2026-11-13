@@ -42,7 +42,7 @@ export default function TripMap({ trip, items }: { trip: Trip; items: Item[] }) 
       for (const s of stops) {
         if (!alive) return
         try {
-          const ll = await locate(s.query, s.context)
+          const ll = s.known ?? await locate(s.query, s.context)
           if (alive) setFound((f) => (f[s.key] === ll ? f : { ...f, [s.key]: ll }))
         } catch {
           if (alive) setFailed(true)

@@ -1,18 +1,25 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CATEGORIES, db, deleteItem, eventTypeOf } from '../db'
+import { CATEGORIES, db, deleteItem, eventTypeOf, type Item } from '../db'
+import { pointUrl, useMapProvider, type MapProvider } from '../geo'
+import { matchAirport, matchStation, prettyStation } from '../stations'
 import { formatDateTime } from '../format'
 import { CopyValue, Empty, Linkify, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
 import { CatIcon } from '../components/icons'
 
-function mapsLink(q: string) {
-  return `https://maps.google.com/?q=${encodeURIComponent(q)}`
+function placeInfo(category: Item['category'], raw: string, provider: MapProvider): { text: string; href: string } {
+  const known = category === 'flight' ? matchAirport(raw) : category === 'transport' ? matchStation(raw) : null
+  const text = known?.label ?? (category === 'transport' ? prettyStation(raw) : raw)
+  if (known?.ll) return { text, href: pointUrl(provider, known.ll) }
+  const q = encodeURIComponent(category === 'transport' && !/вокзал/i.test(text) ? `${text} вокзал` : text)
+  return { text, href: provider === 'yandex' ? `https://yandex.ru/maps/?text=${q}` : `https://www.google.com/maps/search/?api=1&query=${q}` }
 }
 
 export default function ItemView() {
   const { itemId } = useParams()
   const navigate = useNavigate()
+  const provider = useMapProvider()
   const item = useLiveQuery(async () => (await db.items.get(itemId!)) ?? null, [itemId])
   const trip = useLiveQuery(async () => (item ? (await db.trips.get(item.tripId)) ?? null : null), [item?.tripId])
 
@@ -35,10 +42,10 @@ export default function ItemView() {
 
       <dl className="details">
         {item.place && cfg.place && (
-          <><dt>{cfg.place}</dt><dd><a href={mapsLink(item.place)} target="_blank" rel="noopener" className="link">{item.place}</a></dd></>
+          <><dt>{cfg.place}</dt><dd><a href={placeInfo(item.category, item.place, provider).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.place, provider).text}</a></dd></>
         )}
         {item.placeTo && cfg.placeTo && (
-          <><dt>{cfg.placeTo}</dt><dd><a href={mapsLink(item.placeTo)} target="_blank" rel="noopener" className="link">{item.placeTo}</a></dd></>
+          <><dt>{cfg.placeTo}</dt><dd><a href={placeInfo(item.category, item.placeTo, provider).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.placeTo, provider).text}</a></dd></>
         )}
         {item.startDate && (<><dt>{cfg.start}</dt><dd className="strong">{formatDateTime(item.startDate, item.startTime)}</dd></>)}
         {(item.endDate || item.endTime) && cfg.end && (

@@ -1,5 +1,6 @@
 import type { Category, EventType, Item } from './db'
 import { AIRLINES, AIRPORTS } from './airports'
+import { prettyStation } from './stations'
 
 /**
  * Распознавание билетов и броней по тексту файла.
@@ -234,13 +235,15 @@ export function parseTicket(raw: string, today = new Date()): ParsedTicket {
     let from = labelValue(text, FROM_LABELS), to = labelValue(text, TO_LABELS)
     if (!from || !to) [from, to] = routePair(text)
     from = from.replace(/\s*\d{1,2}[.:]\d{2}.*$/, ''); to = to.replace(/\s*\d{1,2}[.:]\d{2}.*$/, '')
+    const fromCity = prettyStation(from).split(',')[0], toCity = prettyStation(to).split(',')[0]
+    from = prettyStation(from); to = prettyStation(to)
     if (from) f.place = from
     if (to) f.placeTo = to
     setDates(...startEnd(dates, /отправлен|departure|отъезд/i, /прибыти|arrival/i))
     const train = text.match(/поезд\s*(?:№\s*)?(\d{1,4}\s?[А-ЯЁA-Z]{0,2})(?![а-яё])/i)
     const bus = !train && /автобус|bus\b/i.test(text)
     const what = train ? `Поезд ${train[1].replace(/\s/g, '')}` : bus ? 'Автобус' : 'Поезд'
-    f.title = [what, from && to ? `${from} — ${to}` : ''].filter(Boolean).join(' ')
+    f.title = [what, fromCity && toCity ? `${fromCity} — ${toCity}` : ''].filter(Boolean).join(' ')
     const notes = seatNotes(text)
     if (notes) f.notes = notes
   } else if (category === 'hotel') {

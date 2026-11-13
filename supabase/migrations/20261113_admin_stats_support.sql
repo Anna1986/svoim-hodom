@@ -110,3 +110,10 @@ begin
 end $$;
 revoke all on function public.admin_user_records(uuid) from public;
 grant execute on function public.admin_user_records(uuid) to authenticated;
+
+-- Административные функции — только для вошедших пользователей (проверка админа внутри)
+revoke execute on function public.admin_stats() from anon;
+revoke execute on function public.admin_support_list() from anon;
+revoke execute on function public.admin_user_records(uuid) from anon;
+revoke execute on function public.is_admin() from anon;
+-- Администратор (Анна) добавлен вручную: insert into public.admins(user_id) values ('<id>');

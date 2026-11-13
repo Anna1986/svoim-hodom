@@ -3,6 +3,7 @@ import { exportBackup, importBackup } from '../backup'
 import { formatSize } from '../format'
 import { PageHeader } from '../components/ui'
 import { AccountSection } from '../components/Account'
+import { SupportSection } from '../components/Support'
 import { useSyncState } from '../sync'
 import { setMapProvider, useMapProvider } from '../geo'
 
@@ -59,6 +60,8 @@ export default function Settings() {
       <PageHeader title={sync.user ? 'Профиль' : 'Вход и настройки'} />
 
       <AccountSection />
+
+      <SupportSection />
 
       <section className="section">
         <h2>Где хранятся данные</h2>

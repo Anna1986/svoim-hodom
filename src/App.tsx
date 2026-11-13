@@ -14,6 +14,7 @@ import { IconCompass, IconDoc, IconSuitcase, IconUser } from './components/icons
 import Explore from './pages/Explore'
 import SharedTrip from './pages/SharedTrip'
 import ResetPassword from './pages/ResetPassword'
+import Admin, { AdminUser } from './pages/Admin'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
@@ -78,6 +79,8 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/u/:userId" element={<AdminUser />} />
           <Route path="*" element={<Navigate to="/trips" replace />} />
         </Routes>
       </main>

@@ -622,3 +622,16 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .ticket-import-text small { color: var(--muted); font-size: 0.82rem; }
 .import-note { background: #eefaf2; border: 1px solid #c9ecd5; color: #166534; border-radius: 14px; padding: 10px 12px; font-size: 0.9rem; }
 .import-note-warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+
+/* ---------- Администрирование и поддержка ---------- */
+.admin-h { font-size: 1.05rem; margin: 22px 0 10px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; display: grid; gap: 2px; box-shadow: var(--shadow); }
+.stat-n { font-size: 1.7rem; font-weight: 700; color: var(--text); }
+.stat-label { color: var(--muted); font-size: 0.9rem; }
+.stat-sub { color: var(--primary); font-size: 0.8rem; }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 70px; margin-top: 12px; padding: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.bar { flex: 1; min-height: 3px; background: var(--primary); border-radius: 3px 3px 0 0; opacity: 0.8; }
+.support-open { background: #eefaf2; border: 1px solid #c9ecd5; border-radius: 16px; padding: 12px 14px; display: grid; gap: 10px; }
+.support-open p { margin: 0; }
+.support-ask { display: grid; gap: 10px; }

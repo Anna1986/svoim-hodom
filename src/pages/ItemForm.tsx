@@ -130,6 +130,9 @@ export default function ItemForm() {
         {!['visa', 'insurance', 'route'].includes(draft.category) && (
           <TicketImport onResult={(r) => applyImport(r, !!itemId)} />
         )}
+        {draft.category === 'route' && !itemId && (
+          <div className="import-note">Маршрут всей поездки по дням собирается сам из билетов, жилья и событий — он в разделе «Маршруты». Здесь можно добавить свой: прогулку, трек, поездку на машине.</div>
+        )}
         {importNote && <div className={`import-note ${importNote.warn ? 'import-note-warn' : ''}`}>{importNote.text}</div>}
         {itemId && (
           <label className="field">

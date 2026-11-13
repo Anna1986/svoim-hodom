@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, eventTypeOf, type Category, type Item } from '../db'
-import { formatDay, formatRangeShort, formatShort, todayISO } from '../format'
+import { formatDay, formatRangeShort, formatShort, plural, todayISO } from '../format'
 import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { ShareSheet } from '../components/ShareSheet'
@@ -9,13 +9,22 @@ import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
 import { PlanCalendar } from '../components/PlanCalendar'
+import { prettyStation } from '../stations'
 import type { PlanEvent } from '../trip'
 
 const TripMap = lazy(() => import('../components/TripMap'))
 
 function placeLine(item: Item): string {
-  if (item.place && item.placeTo) return `${item.place} → ${item.placeTo}`
-  return item.place || item.placeTo
+  const pretty = (p: string) => (item.category === 'transport' && p ? prettyStation(p) : p)
+  const from = pretty(item.place), to = pretty(item.placeTo)
+  if (from && to) return `${from} → ${to}`
+  return from || to
+}
+
+/** Номер дня поездки и сколько дней всего. */
+function dayNo(trip: { startDate: string }, date: string): number {
+  if (!trip.startDate) return 0
+  return Math.round((new Date(date + 'T12:00:00').getTime() - new Date(trip.startDate + 'T12:00:00').getTime()) / 864e5) + 1
 }
 
 function ItemRow({ item, fileCount }: { item: Item; fileCount: number }) {
@@ -184,7 +193,7 @@ export default function TripView() {
       {tab === 'folders' && !folder && (
         <div className="folders">
           {CATEGORY_ORDER.map((c) => {
-            const n = items.filter((i) => i.category === c).length
+            const n = c === 'route' ? (trip.startDate && trip.endDate ? dayNo(trip, trip.endDate) : byDay.length) : items.filter((i) => i.category === c).length
             return (
               <button key={c} className="folder" onClick={() => setParams({ folder: c })}>
                 <CatIcon c={c} size={76} className="folder-img" />
@@ -199,7 +208,59 @@ export default function TripView() {
         </div>
       )}
 
-      {tab === 'folders' && folder && CATEGORIES[folder] && (
+      {tab === 'folders' && folder === 'route' && (
+        <section>
+          <button className="back back-btn" onClick={() => setParams({}, { replace: true })}>← Все брони и билеты</button>
+          <h2 className="folder-heading"><CatIcon c="route" size={48} /> Маршрут поездки</h2>
+          {byDay.length === 0 ? (
+            <p className="muted">Маршрут соберётся сам из билетов, жилья и событий с датами.</p>
+          ) : (
+            <>
+              <div className="view-toggle">
+                <button className={params.get('rview') !== 'map' ? 'active' : ''} onClick={() => setParams({ folder: 'route' }, { replace: true })}><IconList /> По дням</button>
+                <button className={params.get('rview') === 'map' ? 'active' : ''} onClick={() => setParams({ folder: 'route', rview: 'map' }, { replace: true })}><IconPin /> На карте</button>
+              </div>
+              {params.get('rview') === 'map' ? (
+                <Suspense fallback={<p className="muted">Загружаем карту…</p>}>
+                  <TripMap trip={trip} items={items} />
+                </Suspense>
+              ) : (
+                <>
+                  <p className="muted small route-summary">
+                    {(() => {
+                      const total = trip.startDate && trip.endDate ? dayNo(trip, trip.endDate) : byDay.length
+                      return `${total} ${plural(total, 'день', 'дня', 'дней')} · ${formatRangeShort(trip.startDate || byDay[0][0], trip.endDate || byDay[byDay.length - 1][0])}`
+                    })()}
+                  </p>
+                  {byDay.map(([date, events], i) => (
+                    <section key={date} className={`day ${date < today ? 'day-past' : ''} ${date === today ? 'day-today' : ''}`}>
+                      <h3 className="day-title">
+                        {dayNo(trip, date) > 0 ? `День ${dayNo(trip, date)}` : `День ${i + 1}`} · {formatDay(date)}
+                        {date === today && <span className="pill pill-current">сегодня</span>}
+                      </h3>
+                      {renderEvents(events)}
+                    </section>
+                  ))}
+                </>
+              )}
+            </>
+          )}
+          {(() => {
+            const own = items.filter((i) => i.category === 'route')
+            return (
+              <section className="section">
+                <h2>Свои маршруты</h2>
+                {own.length > 0
+                  ? <div className="rows">{own.map((it) => <ItemRow key={it.id} item={it} fileCount={fileCounts[it.id] ?? 0} />)}</div>
+                  : <p className="muted small">Прогулки, треки, маршруты на машине — со ссылкой на карту или файлом.</p>}
+                <Link to={addLink} className="btn btn-soft add-inline">+ Добавить маршрут</Link>
+              </section>
+            )
+          })()}
+        </section>
+      )}
+
+      {tab === 'folders' && folder && folder !== 'route' && CATEGORIES[folder] && (
         <section>
           <button className="back back-btn" onClick={() => setParams({}, { replace: true })}>← Все брони и билеты</button>
           <h2 className="folder-heading"><CatIcon c={folder} size={48} /> {CATEGORIES[folder].label}</h2>

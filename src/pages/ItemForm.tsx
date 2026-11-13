@@ -5,6 +5,9 @@ import { PageHeader } from '../components/ui'
 import { PendingFiles } from '../components/Attachments'
 import { CatIcon } from '../components/icons'
 import { fitTripToTickets } from '../trip'
+import { TicketImport, type ImportResult } from '../components/TicketImport'
+import { takePendingImport } from '../ticketImport'
+import { FIELD_NAMES, type ParsedFields } from '../ticketParse'
 
 type Draft = Omit<Item, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
 
@@ -28,6 +31,40 @@ export default function ItemForm() {
   const [loaded, setLoaded] = useState(!itemId)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [importNote, setImportNote] = useState<{ text: string; warn: boolean } | null>(null)
+
+  function applyImport(r: ImportResult, onlyEmpty: boolean) {
+    if (!itemId) setFiles((fs) => (fs.some((f) => f.name === r.file.name && f.size === r.file.size) ? fs : [...fs, r.file]))
+    if (!r.parsed) return setImportNote({ text: r.error, warn: true })
+    const filled: string[] = []
+    const next = { ...draft }
+    const c = CATEGORIES[draft.category]
+    const label: Partial<Record<keyof ParsedFields, string>> = {
+      place: c.place, placeTo: c.placeTo, startDate: c.start, startTime: 'время', endDate: c.end, endTime: 'время', bookingRef: c.ref,
+    }
+    const order: (keyof ParsedFields)[] = ['title', 'eventType', 'place', 'placeTo', 'startDate', 'startTime', 'endDate', 'endTime', 'bookingRef', 'notes']
+    for (const k of order) {
+      const v = r.parsed.fields[k]
+      if (!v || (onlyEmpty && next[k])) continue
+      if (k === 'notes' && next.notes) next.notes = `${next.notes}\n${v}`
+      else (next as Record<string, unknown>)[k] = v
+      filled.push((label[k] || FIELD_NAMES[k]).toLowerCase())
+    }
+    setDraft(next)
+    setImportNote(
+      filled.length
+        ? { text: `Из файла заполнено: ${[...new Set(filled)].join(', ')}. Проверьте перед сохранением.`, warn: false }
+        : { text: 'В файле не нашлось реквизитов — заполните поля вручную.' + (itemId ? '' : ' Файл прикреплён к записи.'), warn: true },
+    )
+  }
+
+  // Файл, выбранный на странице «Что добавить?»
+  useEffect(() => {
+    if (itemId) return
+    const p = takePendingImport()
+    if (p) applyImport(p, false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (!itemId) return
@@ -90,6 +127,10 @@ export default function ItemForm() {
     <>
       <PageHeader title={itemId ? 'Редактировать' : <span className="title-with-icon"><CatIcon c={draft.category} size={44} /> {cfg.one}</span>} back={back} />
       <form className="form" onSubmit={onSubmit} noValidate>
+        {!['visa', 'insurance', 'route'].includes(draft.category) && (
+          <TicketImport onResult={(r) => applyImport(r, !!itemId)} />
+        )}
+        {importNote && <div className={`import-note ${importNote.warn ? 'import-note-warn' : ''}`}>{importNote.text}</div>}
         {itemId && (
           <label className="field">
             <span>Папка</span>
@@ -114,7 +155,7 @@ export default function ItemForm() {
 
         <label className="field">
           <span>Название *</span>
-          <input value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder={draft.category === 'voucher' && draft.eventType ? EVENT_TYPES[draft.eventType].placeholder : cfg.titlePlaceholder} autoFocus={!itemId} />
+          <input value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder={draft.category === 'voucher' && draft.eventType ? EVENT_TYPES[draft.eventType].placeholder : cfg.titlePlaceholder} autoFocus={!itemId && !importNote} />
         </label>
 
         {(cfg.place || cfg.placeTo) && (

@@ -610,3 +610,15 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .map-missing h3 { margin: 0 0 4px; font-size: 1rem; }
 .map-missing-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
 .map-pop-links a:hover { text-decoration: underline; }
+
+/* ---------- Распознавание билетов ---------- */
+.ticket-import { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--primary-soft); color: var(--text); cursor: pointer; border: 1.5px dashed #b9cdf5; }
+.ticket-import-big { padding: 16px 18px; margin-bottom: 18px; border-radius: var(--radius); }
+.ticket-import.is-busy { opacity: 0.7; cursor: progress; }
+.ticket-import-icon { font-size: 28px; flex: none; }
+.ticket-import-big .ticket-import-icon { font-size: 34px; }
+.ticket-import-text { display: grid; gap: 2px; }
+.ticket-import-text b { color: var(--primary); font-weight: 600; }
+.ticket-import-text small { color: var(--muted); font-size: 0.82rem; }
+.import-note { background: #eefaf2; border: 1px solid #c9ecd5; color: #166534; border-radius: 14px; padding: 10px 12px; font-size: 0.9rem; }
+.import-note-warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }

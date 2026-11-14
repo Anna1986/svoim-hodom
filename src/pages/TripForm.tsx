@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useTripAccess } from '../members'
 import { db, newId, type Trip } from '../db'
 import { PageHeader } from '../components/ui'
-import { autoCoverKey, COVERS } from '../covers'
+import { autoCoverKey, COVERS, savedCoverKey } from '../covers'
 
 type Draft = Pick<Trip, 'title' | 'destination' | 'startDate' | 'endDate' | 'notes'> & { cover: string }
 const EMPTY: Draft = { title: '', destination: '', startDate: '', endDate: '', notes: '', cover: '' }
@@ -21,7 +21,7 @@ export default function TripForm() {
     if (!id) return
     db.trips.get(id).then((t) => {
       if (!t) return navigate('/trips', { replace: true })
-      setDraft({ title: t.title, destination: t.destination, startDate: t.startDate, endDate: t.endDate, notes: t.notes, cover: t.cover ?? '' })
+      setDraft({ title: t.title, destination: t.destination, startDate: t.startDate, endDate: t.endDate, notes: t.notes, cover: savedCoverKey(t.cover) })
       setLoaded(true)
     })
   }, [id, navigate])

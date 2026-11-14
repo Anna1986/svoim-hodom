@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useTripAccess } from '../members'
 import { addAttachments, CATEGORIES, CATEGORY_ORDER, db, EVENT_TYPE_ORDER, EVENT_TYPES, newId, type Category, type EventType, type Item } from '../db'
 import { PageHeader } from '../components/ui'
 import { PendingFiles } from '../components/Attachments'
@@ -27,6 +28,7 @@ export default function ItemForm() {
 
   const [draft, setDraft] = useState<Draft>(() => emptyDraft(initialCat))
   const [tripId, setTripId] = useState(tripIdParam ?? '')
+  const access = useTripAccess(tripId || undefined)
   const [files, setFiles] = useState<File[]>([])
   const [loaded, setLoaded] = useState(!itemId)
   const [error, setError] = useState('')
@@ -120,6 +122,7 @@ export default function ItemForm() {
     }
   }
 
+  if (!access.canEdit) return <Navigate to={itemId ? `/items/${itemId}` : `/trips/${tripId}`} replace />
   if (!loaded) return null
   const back = itemId ? `/items/${itemId}` : `/trips/${tripId}`
 

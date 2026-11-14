@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { useTripAccess } from '../members'
 import { db, newId, type Trip } from '../db'
 import { PageHeader } from '../components/ui'
 import { autoCoverKey, COVERS } from '../covers'
@@ -9,6 +10,7 @@ const EMPTY: Draft = { title: '', destination: '', startDate: '', endDate: '', n
 
 export default function TripForm() {
   const { id } = useParams()
+  const access = useTripAccess(id)
   const navigate = useNavigate()
   const [draft, setDraft] = useState<Draft>(EMPTY)
   const [loaded, setLoaded] = useState(!id)
@@ -44,6 +46,7 @@ export default function TripForm() {
     }
   }
 
+  if (id && !access.canEdit) return <Navigate to={`/trips/${id}`} replace />
   if (!loaded) return null
   const back = id ? `/trips/${id}` : '/trips'
 

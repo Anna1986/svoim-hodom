@@ -5,6 +5,8 @@ import { formatDay, formatRangeShort, formatShort, plural, todayISO } from '../f
 import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { ShareSheet } from '../components/ShareSheet'
+import { MembersSheet } from '../components/MembersSheet'
+import { leaveTrip, useTripAccess } from '../members'
 import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
@@ -67,13 +69,17 @@ export default function TripView() {
   }, [id])
   const docs = useLiveQuery(() => db.docs.toArray(), [])
   const [sharing, setSharing] = useState(false)
+  const [membersOpen, setMembersOpen] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [leaveErr, setLeaveErr] = useState('')
+  const access = useTripAccess(id)
 
   // Билеты могли прийти с другого устройства или появиться раньше этой функции — подгоняем даты.
   useEffect(() => {
-    if (!trip || !items) return
+    if (!trip || !items || !access.canEdit) return
     const next = fittedDates(trip, items)
     if (next.startDate !== trip.startDate || next.endDate !== trip.endDate) void fitTripToTickets(trip.id)
-  }, [trip, items])
+  }, [trip, items, access.canEdit])
 
   if (trip === undefined || !items || !fileCounts || !docs) return null
   if (trip === null) {
@@ -90,6 +96,16 @@ export default function TripView() {
     if (!window.confirm(`Удалить поездку «${trip!.title}» вместе со всеми бронями и файлами?`)) return
     await deleteTrip(trip!.id)
     navigate('/trips', { replace: true })
+  }
+
+  // Участник выходит из чужой поездки (второе нажатие — подтверждение)
+  async function leave() {
+    setLeaveErr('')
+    if (!leaving) { setLeaving(true); return }
+    try {
+      await leaveTrip(trip!.id)
+      navigate('/trips', { replace: true })
+    } catch (e) { setLeaveErr((e as Error).message); setLeaving(false) }
   }
 
   function renderEvents(events: PlanEvent[]) {
@@ -122,8 +138,12 @@ export default function TripView() {
     <>
       <div className="hero-top">
         <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
-        <button className="hero-back share-btn" onClick={() => setSharing(true)}>⤴︎ Поделиться</button>
+        <span className="hero-actions">
+          <button className="hero-back share-btn" onClick={() => setMembersOpen(true)}>👥 Участники</button>
+          {!access.shared && <button className="hero-back share-btn" onClick={() => setSharing(true)}>⤴︎ Поделиться</button>}
+        </span>
       </div>
+      {membersOpen && <MembersSheet tripId={trip.id} title={trip.title} access={access} onClose={() => setMembersOpen(false)} />}
       {sharing && <ShareSheet tripId={trip.id} title={trip.title} onClose={() => setSharing(false)} />}
       <header className="hero">
         <img className="cover-img" src={coverFor(trip).src} alt="" style={{ objectPosition: coverFor(trip).position }} />
@@ -136,6 +156,9 @@ export default function TripView() {
         </div>
       </header>
 
+      {access.shared && (
+        <div className="shared-note">👥 Общая поездка · {access.canEdit ? 'вы можете добавлять и менять брони' : 'только просмотр'}</div>
+      )}
       {warnings.map((w, i) => <div key={i} className="warning">⚠️ {w}</div>)}
 
       <div className="tabs" role="tablist">
@@ -151,7 +174,7 @@ export default function TripView() {
         items.length === 0 ? (
           <Empty icon="🗺️">
             <p>Добавьте билеты, жильё и экскурсии — план по дням соберётся сам.</p>
-            <Link to={`/trips/${trip.id}/add`} className="btn btn-primary">Добавить бронь</Link>
+            {access.canEdit && <Link to={`/trips/${trip.id}/add`} className="btn btn-primary">Добавить бронь</Link>}
           </Empty>
         ) : (
           <div className="plan">
@@ -253,7 +276,7 @@ export default function TripView() {
                 {own.length > 0
                   ? <div className="rows">{own.map((it) => <ItemRow key={it.id} item={it} fileCount={fileCounts[it.id] ?? 0} />)}</div>
                   : <p className="muted small">Прогулки, треки, маршруты на машине — со ссылкой на карту или файлом.</p>}
-                <Link to={addLink} className="btn btn-soft add-inline">+ Добавить маршрут</Link>
+                {access.canEdit && <Link to={addLink} className="btn btn-soft add-inline">+ Добавить маршрут</Link>}
               </section>
             )
           })()}
@@ -274,7 +297,7 @@ export default function TripView() {
               <p className="muted">Пока пусто.</p>
             )
           })()}
-          <Link to={addLink} className="btn btn-soft add-inline">+ Добавить {CATEGORIES[folder].add}</Link>
+          {access.canEdit && <Link to={addLink} className="btn btn-soft add-inline">+ Добавить {CATEGORIES[folder].add}</Link>}
         </section>
       )}
 
@@ -286,11 +309,14 @@ export default function TripView() {
       )}
 
       <div className="form-actions page-actions">
-        <Link to={`/trips/${trip.id}/edit`} className="btn">Изменить</Link>
-        <button className="btn btn-danger" onClick={remove}>Удалить</button>
+        {access.canEdit && <Link to={`/trips/${trip.id}/edit`} className="btn">Изменить</Link>}
+        {access.shared
+          ? <button className="btn btn-danger" onClick={leave}>{leaving ? 'Точно выйти из поездки?' : 'Выйти из поездки'}</button>
+          : <button className="btn btn-danger" onClick={remove}>Удалить</button>}
       </div>
+      {leaveErr && <div className="error">{leaveErr}</div>}
 
-      <Fab to={addLink} label="Добавить" />
+      {access.canEdit && <Fab to={addLink} label="Добавить" />}
     </>
   )
 }

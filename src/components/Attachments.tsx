@@ -24,7 +24,7 @@ function canShareFiles(): boolean {
   }
 }
 
-function Tile({ a }: { a: Attachment }) {
+function Tile({ a, readOnly }: { a: Attachment; readOnly: boolean }) {
   const url = useObjectUrl(a.blob)
   const isImage = a.mime.startsWith('image/')
 
@@ -52,14 +52,14 @@ function Tile({ a }: { a: Attachment }) {
       <div className="att-actions">
         {canShareFiles() && <button type="button" className="icon-btn" onClick={share} aria-label="Поделиться или сохранить">⤴︎</button>}
         <a className="icon-btn" href={url} download={a.name} aria-label="Скачать">⬇︎</a>
-        <button type="button" className="icon-btn icon-danger" onClick={remove} aria-label="Удалить">✕</button>
+        {!readOnly && <button type="button" className="icon-btn icon-danger" onClick={remove} aria-label="Удалить">✕</button>}
       </div>
     </li>
   )
 }
 
 /** Файлы, уже сохранённые у записи или документа. */
-export function Attachments({ ownerType, ownerId }: { ownerType: OwnerType; ownerId: string }) {
+export function Attachments({ ownerType, ownerId, readOnly = false }: { ownerType: OwnerType; ownerId: string; readOnly?: boolean }) {
   const list = useLiveQuery(() => db.attachments.where('ownerId').equals(ownerId).sortBy('createdAt'), [ownerId])
   const [busy, setBusy] = useState(false)
 
@@ -80,14 +80,16 @@ export function Attachments({ ownerType, ownerId }: { ownerType: OwnerType; owne
     <section className="section">
       <h2>Файлы {list && list.length > 0 && <span className="muted-inline">· {list.length}</span>}</h2>
       {list && list.length > 0 ? (
-        <ul className="att-list">{list.map((a) => <Tile key={a.id} a={a} />)}</ul>
+        <ul className="att-list">{list.map((a) => <Tile key={a.id} a={a} readOnly={readOnly} />)}</ul>
       ) : (
-        <p className="muted">Прикрепите билет, бронь, ваучер или фото документа.</p>
+        <p className="muted">{readOnly ? 'Файлов нет.' : 'Прикрепите билет, бронь, ваучер или фото документа.'}</p>
       )}
-      <label className={`btn btn-soft att-add ${busy ? 'disabled' : ''}`}>
-        <input type="file" multiple hidden onChange={onPick} disabled={busy} />
-        {busy ? 'Сохраняю…' : '📎 Прикрепить файл'}
-      </label>
+      {!readOnly && (
+        <label className={`btn btn-soft att-add ${busy ? 'disabled' : ''}`}>
+          <input type="file" multiple hidden onChange={onPick} disabled={busy} />
+          {busy ? 'Сохраняю…' : '📎 Прикрепить файл'}
+        </label>
+      )}
     </section>
   )
 }

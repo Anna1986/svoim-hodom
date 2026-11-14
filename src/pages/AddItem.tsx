@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { useTripAccess } from '../members'
 import { TicketImport } from '../components/TicketImport'
 import { setPendingImport } from '../ticketImport'
 import { CATEGORIES, CATEGORY_ORDER } from '../db'
@@ -10,6 +11,8 @@ export default function AddItem() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [error, setError] = useState('')
+  const access = useTripAccess(id)
+  if (!access.canEdit) return <Navigate to={`/trips/${id}`} replace />
   return (
     <>
       <PageHeader title="Что добавить?" back={`/trips/${id}`} />

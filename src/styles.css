@@ -635,3 +635,21 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .support-open { background: #eefaf2; border: 1px solid #c9ecd5; border-radius: 16px; padding: 12px 14px; display: grid; gap: 10px; }
 .support-open p { margin: 0; }
 .support-ask { display: grid; gap: 10px; }
+
+/* ---------- Участники поездки ---------- */
+.hero-actions { display: flex; gap: 8px; }
+.people { list-style: none; padding: 0; margin: 8px 0 4px; display: grid; gap: 8px; }
+.person { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 10px 12px; flex-wrap: wrap; }
+.person-avatar { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 600; display: grid; place-items: center; }
+.person-body { flex: 1; min-width: 0; display: grid; }
+.person-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.sheet-sub { font-size: 1rem; margin: 18px 0 8px; }
+.invite-link { display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; margin: 8px 0; font-size: 0.85rem; }
+.invite-link .break { flex: 1; min-width: 0; word-break: break-all; color: var(--muted); }
+.invite-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 18px; }
+.invite-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+.shared-note { display: flex; align-items: center; gap: 8px; background: var(--primary-soft); color: #1e3a8a; border-radius: 14px; padding: 10px 14px; margin: 10px 0; font-size: 0.92rem; }
+.shared-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; font-weight: 600; background: rgba(255,255,255,0.85); color: #1e3a8a; padding: 2px 9px; border-radius: 999px; margin-bottom: 4px; width: fit-content; }
+.hero-actions .share-btn { white-space: nowrap; padding: 4px 10px; font-size: 0.9rem; }
+.person-actions { flex-basis: 100%; padding-left: 46px; }

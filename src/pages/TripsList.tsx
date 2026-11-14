@@ -8,6 +8,7 @@ import { AccountBadge } from '../components/Account'
 import { coverFor } from '../covers'
 import { IconCalendar, IconClock, IconPin } from '../components/icons'
 import { useSyncState } from '../sync'
+import { useSharedTrips } from '../members'
 
 const SECTIONS: { phase: Phase; title: string }[] = [
   { phase: 'current', title: 'Сейчас' },
@@ -16,7 +17,7 @@ const SECTIONS: { phase: Phase; title: string }[] = [
   { phase: 'past', title: 'Прошедшие' },
 ]
 
-function TripCard({ t }: { t: Trip }) {
+function TripCard({ t, shared }: { t: Trip; shared: boolean }) {
   const countdown = tripCountdown(t)
   const phase = tripPhase(t)
   return (
@@ -24,6 +25,7 @@ function TripCard({ t }: { t: Trip }) {
       <img className="cover-img" src={coverFor(t).src} alt="" loading="lazy" style={{ objectPosition: coverFor(t).position }} />
       <div className="cover-fade" />
       <div className="trip-card-body">
+        {shared && <span className="shared-badge">👥 общая</span>}
         <div className="trip-card-title">{t.title}</div>
         {t.destination && <div className="hero-row small-row"><IconPin size={16} /> {t.destination}</div>}
         {(t.startDate || t.endDate) && <div className="hero-row small-row"><IconCalendar size={16} className="ic-blue" /> {formatRangeShort(t.startDate, t.endDate)}</div>}
@@ -36,6 +38,7 @@ function TripCard({ t }: { t: Trip }) {
 export default function TripsList() {
   const trips = useLiveQuery(() => db.trips.toArray(), [])
   const sync = useSyncState()
+  const sharedTrips = useSharedTrips()
   if (!trips) return null
 
   return (
@@ -67,7 +70,7 @@ export default function TripsList() {
             <section key={phase} className="group">
               <h2 className="group-title">{title}</h2>
               <ul className="cards">
-                {list.map((t) => <li key={t.id}><TripCard t={t} /></li>)}
+                {list.map((t) => <li key={t.id}><TripCard t={t} shared={!!sharedTrips[t.id]} /></li>)}
               </ul>
             </section>
           )

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import TripsList from './pages/TripsList'
 import TripForm from './pages/TripForm'
 import TripView from './pages/TripView'
@@ -15,6 +15,8 @@ import Explore from './pages/Explore'
 import SharedTrip from './pages/SharedTrip'
 import ResetPassword from './pages/ResetPassword'
 import Admin, { AdminUser } from './pages/Admin'
+import Join from './pages/Join'
+import { pendingInvite } from './members'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
@@ -26,6 +28,13 @@ export default function App() {
   const { pathname } = useLocation()
   const sync = useSyncState()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+
+  // Приглашение в поездку открыли до входа — после входа возвращаемся к нему
+  const navigate = useNavigate()
+  useEffect(() => {
+    const token = pendingInvite()
+    if (sync.user && token && !pathname.startsWith('/join/')) navigate(`/join/${token}`, { replace: true })
+  }, [sync.user?.id])
 
   // Поездка по ссылке «поделиться» — отдельная страница без меню приложения
   if (pathname.startsWith('/s/')) {
@@ -79,6 +88,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/join/:token" element={<Join />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/u/:userId" element={<AdminUser />} />
           <Route path="*" element={<Navigate to="/trips" replace />} />

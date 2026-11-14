@@ -6,6 +6,7 @@ import { matchAirport, matchStation, prettyStation } from '../stations'
 import { formatDateTime } from '../format'
 import { CopyValue, Empty, Linkify, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
+import { useTripAccess } from '../members'
 import { CatIcon } from '../components/icons'
 
 function placeInfo(category: Item['category'], raw: string, provider: MapProvider): { text: string; href: string } {
@@ -22,6 +23,7 @@ export default function ItemView() {
   const provider = useMapProvider()
   const item = useLiveQuery(async () => (await db.items.get(itemId!)) ?? null, [itemId])
   const trip = useLiveQuery(async () => (item ? (await db.trips.get(item.tripId)) ?? null : null), [item?.tripId])
+  const access = useTripAccess(item?.tripId)
 
   if (item === undefined) return null
   if (item === null) return <Empty icon="🤷"><p>Запись не найдена.</p><Link to="/trips" className="btn">К поездкам</Link></Empty>
@@ -57,12 +59,14 @@ export default function ItemView() {
 
       {item.notes && <p className="description"><Linkify text={item.notes} /></p>}
 
-      <Attachments ownerType="item" ownerId={item.id} />
+      <Attachments ownerType="item" ownerId={item.id} readOnly={!access.canEdit} />
 
-      <div className="form-actions">
-        <Link to={`/items/${item.id}/edit`} className="btn btn-primary">Редактировать</Link>
-        <button className="btn btn-danger" onClick={remove}>Удалить</button>
-      </div>
+      {access.canEdit && (
+        <div className="form-actions">
+          <Link to={`/items/${item.id}/edit`} className="btn btn-primary">Редактировать</Link>
+          <button className="btn btn-danger" onClick={remove}>Удалить</button>
+        </div>
+      )}
     </>
   )
 }

@@ -14,7 +14,8 @@ import { IconCompass, IconDoc, IconSuitcase, IconUser } from './components/icons
 import Explore from './pages/Explore'
 import SharedTrip from './pages/SharedTrip'
 import ResetPassword from './pages/ResetPassword'
-import Admin, { AdminUser } from './pages/Admin'
+import Admin, { AdminChat, AdminUser } from './pages/Admin'
+import { useSupportUnread } from './admin'
 import Join from './pages/Join'
 import { pendingInvite } from './members'
 
@@ -27,6 +28,7 @@ const NAV = [
 export default function App() {
   const { pathname } = useLocation()
   const sync = useSyncState()
+  const supportUnread = useSupportUnread()
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
 
   // Приглашение в поездку открыли до входа — после входа возвращаемся к нему
@@ -66,7 +68,7 @@ export default function App() {
           to="/settings"
           className={() => `nav-item nav-profile ${pathname.startsWith('/settings') ? 'active' : ''}`}
         >
-          <span className="nav-icon" aria-hidden>{sync.user ? <Avatar size={26} /> : <IconUser size={26} />}</span>
+          <span className="nav-icon" aria-hidden>{sync.user ? <Avatar size={26} /> : <IconUser size={26} />}{supportUnread > 0 && <span className="nav-dot" />}</span>
           <span className="nav-label">{sync.user ? 'Профиль' : 'Войти'}</span>
         </NavLink>
       </nav>
@@ -90,6 +92,7 @@ export default function App() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/join/:token" element={<Join />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/chat/:userId" element={<AdminChat />} />
           <Route path="/admin/u/:userId" element={<AdminUser />} />
           <Route path="*" element={<Navigate to="/trips" replace />} />
         </Routes>

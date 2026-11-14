@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { adminMessageDone, adminMessages, adminStats, isAdmin, supportList, userTrips, type Stats, type SupportMessage, type SupportRequest } from '../admin'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { adminReply, adminStats, adminThread, adminThreads, isAdmin, supportList, userTrips, type Stats, type SupportRequest, type Thread } from '../admin'
+import { Chat } from '../components/Chat'
 import { CATEGORIES, eventTypeOf, type Item, type Trip } from '../db'
 import { formatDateTime, formatRangeShort } from '../format'
 import { PageHeader } from '../components/ui'
@@ -31,13 +32,13 @@ export default function Admin() {
   const ok = useAdmin()
   const [stats, setStats] = useState<Stats | null>(null)
   const [reqs, setReqs] = useState<SupportRequest[]>([])
-  const [msgs, setMsgs] = useState<SupportMessage[]>([])
+  const [threads, setThreads] = useState<Thread[]>([])
   const [err, setErr] = useState('')
 
   useEffect(() => {
     if (!ok) return
-    Promise.all([adminStats(), supportList(), adminMessages()])
-      .then(([st, r, m]) => { setStats(st); setReqs(r); setMsgs(m) })
+    Promise.all([adminStats(), supportList(), adminThreads()])
+      .then(([st, r, m]) => { setStats(st); setReqs(r); setThreads(m) })
       .catch((e) => { console.error(e); setErr('Не получилось загрузить статистику. Проверьте интернет.') })
   }, [ok])
 
@@ -85,20 +86,17 @@ export default function Admin() {
         </>
       )}
 
-      <h2 className="admin-h">Сообщения в поддержку{msgs.some((m) => !m.done_at) && ` · новых ${msgs.filter((m) => !m.done_at).length}`}</h2>
-      {msgs.length === 0 ? <p className="muted">Сообщений пока нет.</p> : (
+      <h2 className="admin-h">Сообщения в поддержку{threads.some((t) => t.unread > 0) && ` · ждут ответа: ${threads.filter((t) => t.unread > 0).length}`}</h2>
+      {threads.length === 0 ? <p className="muted">Сообщений пока нет.</p> : (
         <div className="rows">
-          {msgs.map((m) => (
-            <div key={m.id} className={`msg ${m.done_at ? 'msg-done' : ''}`}>
-              <div className="row-sub">{m.name || m.email} · {m.email} · {fmt(m.created_at)}</div>
-              <div className="msg-text">{m.text}</div>
-              <div className="person-actions msg-actions">
-                <a className="link-btn" href={`mailto:${m.email}?subject=${encodeURIComponent('Своим ходом — ответ поддержки')}&body=${encodeURIComponent('\n\n> ' + m.text.replace(/\n/g, '\n> '))}`}>Ответить по почте</a>
-                <button className="link-btn" onClick={async () => { await adminMessageDone(m.id, !m.done_at); setMsgs(await adminMessages()) }}>
-                  {m.done_at ? 'Вернуть в новые' : 'Отметить решённым'}
-                </button>
-              </div>
-            </div>
+          {threads.map((t) => (
+            <Link key={t.user_id} to={`/admin/chat/${t.user_id}`} state={{ name: t.name || t.email, email: t.email }} className="row">
+              <span className="row-body">
+                <span className="row-title">{t.name || t.email}{t.unread > 0 && <span className="badge">{t.unread}</span>}</span>
+                <span className="row-sub">{t.email} · {fmt(t.last_at)}</span>
+                <span className="row-sub thread-last">{t.last_from_admin ? 'Вы: ' : ''}{t.last_text}</span>
+              </span>
+            </Link>
           ))}
         </div>
       )}
@@ -171,6 +169,26 @@ export function AdminUser() {
           </section>
         )
       })}
+    </>
+  )
+}
+
+export function AdminChat() {
+  const ok = useAdmin()
+  const { userId } = useParams()
+  const who = (useLocation().state ?? {}) as { name?: string; email?: string }
+  if (!ok || !userId) return null
+  return (
+    <>
+      <PageHeader title={who.name || 'Переписка'} back="/admin" />
+      {who.email && <p className="muted small">{who.email}</p>}
+      <Chat
+        mine="admin"
+        load={() => adminThread(userId)}
+        send={(t) => adminReply(userId, t)}
+        empty="Сообщений нет."
+        placeholder="Ваш ответ — пользователь увидит его в профиле"
+      />
     </>
   )
 }

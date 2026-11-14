@@ -5,7 +5,7 @@ import App from './App'
 import { requestPersistentStorage } from './db'
 import { initSync } from './sync'
 import { handleAuthRedirect } from './supabase'
-import { trackVisit } from './admin'
+import { trackVisit, watchSupport } from './admin'
 import './styles.css'
 
 // Ссылки из писем (сброс пароля, подтверждение почты) — до отрисовки приложения
@@ -13,6 +13,7 @@ handleAuthRedirect()
 requestPersistentStorage()
 initSync()
 trackVisit()
+watchSupport()
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {

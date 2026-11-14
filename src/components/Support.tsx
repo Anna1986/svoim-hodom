@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { closeSupport, isAdmin, myAccessLog, myGrant, openSupport, sendSupportMessage, type Grant } from '../admin'
+import { closeSupport, isAdmin, markSupportRead, myAccessLog, myGrant, myMessages, openSupport, sendSupportMessage, useSupportUnread, type Grant } from '../admin'
+import { Chat } from './Chat'
 import { useSyncState } from '../sync'
 
 const fmt = (iso: string) =>
@@ -18,8 +19,7 @@ export function SupportSection() {
   const [asking, setAsking] = useState(false)
   const [available, setAvailable] = useState(false)
   const [writing, setWriting] = useState(false)
-  const [text, setText] = useState('')
-  const [sent, setSent] = useState(false)
+  const unread = useSupportUnread()
 
   async function load() {
     try {
@@ -42,15 +42,6 @@ export function SupportSection() {
     void load()
   }
 
-  async function send() {
-    if (!text.trim()) return setErr('Напишите, что случилось')
-    setBusy(true); setErr('')
-    const e = await sendSupportMessage(text)
-    setBusy(false)
-    if (e) return setErr(e)
-    setWriting(false); setText(''); setSent(true)
-  }
-
   async function close() {
     setBusy(true); setErr('')
     const e = await closeSupport()
@@ -68,20 +59,22 @@ export function SupportSection() {
       </p>
       {writing ? (
         <div className="support-ask">
-          <label className="field">
-            <span>Ваше сообщение</span>
-            <textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="Вопрос, проблема или идея" autoFocus />
-          </label>
-          <p className="muted small">Ответим на почту {s.user.email}. Ваши поездки при этом никто не видит.</p>
-          <div className="form-actions">
-            <button className="btn btn-primary" onClick={send} disabled={busy}>{busy ? 'Отправляю…' : 'Отправить'}</button>
-            <button className="btn" onClick={() => { setWriting(false); setErr('') }}>Отмена</button>
-          </div>
+          <Chat
+            mine="user"
+            load={async () => { const m = await myMessages(); if (m.some((x) => x.from_admin && !x.read_at)) void markSupportRead(); return m }}
+            send={sendSupportMessage}
+            empty="Напишите вопрос, проблему или идею — ответ придёт сюда же."
+            placeholder="Ваше сообщение"
+          />
+          <p className="muted small">Ваши поездки при этом никто не видит.</p>
+          <button className="btn" onClick={() => setWriting(false)}>Свернуть</button>
         </div>
       ) : (
-        <button className="btn btn-primary support-btn" onClick={() => { setWriting(true); setSent(false); setAsking(false); setErr('') }}>✉️ Написать в поддержку</button>
+        <button className="btn btn-primary support-btn" onClick={() => { setWriting(true); setAsking(false); setErr('') }}>
+          ✉️ Написать в поддержку{unread > 0 && <span className="badge">{unread}</span>}
+        </button>
       )}
-      {sent && <p className="notice">Сообщение отправлено. Ответим на почту {s.user.email}.</p>}
+      {!writing && unread > 0 && <p className="notice">Поддержка ответила — откройте переписку.</p>}
       {grant ? (
         <div className="support-open">
           <p><b>Доступ поддержки открыт</b> до {fmt(grant.expires_at)}. Поддержка может посмотреть ваши поездки и брони (без документов и файлов), чтобы помочь.</p>

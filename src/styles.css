@@ -674,3 +674,17 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .msg-done { opacity: 0.6; }
 .msg-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .msg-actions { padding-left: 0; }
+
+/* ---------- Переписка с поддержкой ---------- */
+.chat { display: grid; gap: 10px; }
+.chat-list { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; padding: 4px 2px; }
+.bubble { align-self: flex-start; max-width: 85%; background: var(--surface); border: 1px solid var(--border); border-radius: 16px 16px 16px 4px; padding: 8px 12px; display: grid; gap: 2px; }
+.bubble-own { align-self: flex-end; background: var(--primary-soft); border-color: transparent; border-radius: 16px 16px 4px 16px; }
+.bubble-who { font-size: 0.75rem; font-weight: 600; color: var(--primary); }
+.bubble-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.bubble-time { font-size: 0.72rem; color: var(--muted); justify-self: end; }
+.badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 8px; border-radius: 10px; background: #ef4444; color: #fff; font-size: 0.75rem; font-weight: 700; }
+.nav-icon { position: relative; }
+.nav-dot { position: absolute; top: -2px; right: -4px; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; border: 2px solid var(--surface); }
+.thread-last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat textarea { width: 100%; }

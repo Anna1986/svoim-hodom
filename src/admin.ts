@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react'
 import { supabase } from './supabase'
 import { syncNow } from './sync'
 import type { Item, Trip } from './db'
@@ -86,22 +87,71 @@ export async function myAccessLog(): Promise<string[]> {
   return (data ?? []).map((r: { at: string }) => r.at)
 }
 
-/* ---------- Сообщения в поддержку ---------- */
+/* ---------- Переписка с поддержкой ---------- */
+
+export interface ChatMessage { id: number; text: string; from_admin: boolean; created_at: string; read_at: string | null }
+
+const offline = (msg: string) => (navigator.onLine ? msg : 'Нужен интернет.')
+
+export async function myMessages(): Promise<ChatMessage[]> {
+  const { data, error } = await supabase.from('support_messages').select('id, text, from_admin, created_at, read_at').order('id', { ascending: false }).limit(100)
+  if (error) throw new Error(offline('Не получилось загрузить переписку.'))
+  return ((data ?? []) as ChatMessage[]).reverse()
+}
 
 export async function sendSupportMessage(text: string): Promise<string> {
   const { error } = await supabase.from('support_messages').insert({ text: text.trim().slice(0, 4000) })
-  return error ? (navigator.onLine ? 'Не получилось отправить. Попробуйте ещё раз.' : 'Нужен интернет, чтобы отправить сообщение.') : ''
+  return error ? offline('Не получилось отправить. Попробуйте ещё раз.') : ''
 }
 
-export interface SupportMessage { id: number; user_id: string; email: string; name: string; text: string; created_at: string; done_at: string | null }
-
-export async function adminMessages(): Promise<SupportMessage[]> {
-  const { data, error } = await supabase.rpc('admin_messages')
-  if (error) throw error
-  return (data ?? []) as SupportMessage[]
+/** Пользователь прочитал ответы поддержки. */
+export async function markSupportRead() {
+  await supabase.rpc('support_mark_read')
+  setUnread(0)
 }
 
-export async function adminMessageDone(id: number, done: boolean) {
-  const { error } = await supabase.rpc('admin_message_done', { p_id: id, p_done: done })
+/* Непрочитанные ответы поддержки — точка на «Профиле» */
+let unread = 0
+const unreadListeners = new Set<() => void>()
+function setUnread(n: number) { if (n !== unread) { unread = n; unreadListeners.forEach((l) => l()) } }
+
+export async function refreshSupportUnread() {
+  const { data: s } = await supabase.auth.getSession()
+  if (!s.session || !navigator.onLine) return
+  const { count, error } = await supabase.from('support_messages').select('id', { count: 'exact', head: true }).eq('from_admin', true).is('read_at', null)
+  if (!error) setUnread(count ?? 0)
+}
+
+export function useSupportUnread(): number {
+  return useSyncExternalStore((cb) => { unreadListeners.add(cb); return () => unreadListeners.delete(cb) }, () => unread)
+}
+
+let watching = false
+export function watchSupport() {
+  if (watching) return
+  watching = true
+  supabase.auth.onAuthStateChange((_e, session) => { if (session) void refreshSupportUnread(); else setUnread(0) })
+  setInterval(() => { if (document.visibilityState === 'visible') void refreshSupportUnread() }, 60_000)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refreshSupportUnread() })
+}
+
+/* Администратор */
+
+export interface Thread { user_id: string; email: string; name: string; last_text: string; last_at: string; last_from_admin: boolean; unread: number }
+
+export async function adminThreads(): Promise<Thread[]> {
+  const { data, error } = await supabase.rpc('admin_threads')
   if (error) throw error
+  return (data ?? []) as Thread[]
+}
+
+export async function adminThread(userId: string): Promise<ChatMessage[]> {
+  const { data, error } = await supabase.rpc('admin_thread', { p_user: userId })
+  if (error) throw new Error(offline('Не получилось загрузить переписку.'))
+  return (data ?? []) as ChatMessage[]
+}
+
+export async function adminReply(userId: string, text: string): Promise<string> {
+  const { error } = await supabase.rpc('admin_reply', { p_user: userId, p_text: text })
+  return error ? offline('Не получилось отправить. Попробуйте ещё раз.') : ''
 }

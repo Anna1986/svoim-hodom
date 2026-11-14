@@ -172,9 +172,12 @@ export default function SharedTrip() {
         </section>
       )}
 
-      <p className="shared-footer muted small">
-        Сделано в приложении <a href={location.pathname} className="link">«Своим ходом»</a>
-      </p>
+      <aside className="shared-cta">
+        <div className="shared-cta-title">Собираетесь в поездку?</div>
+        <p>Соберите свою так же: билеты, брони и план по дням — в одном месте, даже без интернета.</p>
+        <a href={`${location.pathname}#/trips/new`} className="btn btn-primary">Создать свою поездку</a>
+        <span className="muted small">Бесплатно · приложение «Своим ходом»</span>
+      </aside>
     </div>
   )
 }

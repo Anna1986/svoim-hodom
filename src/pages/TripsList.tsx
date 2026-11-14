@@ -35,19 +35,47 @@ function TripCard({ t, shared }: { t: Trip; shared: boolean }) {
   )
 }
 
+const LOGO = `${import.meta.env.BASE_URL}icon.svg`
+
+function Brand() {
+  return <div className="brand-top show-mobile"><img src={LOGO} alt="" /> Своим ходом</div>
+}
+
+/** Первый экран для гостя: что это за приложение и зачем оно. */
+function Welcome() {
+  return (
+    <div className="welcome">
+      <div className="welcome-brand"><img src={LOGO} alt="" /> Своим ходом</div>
+      <h1 className="welcome-title">Вся поездка — в одном месте</h1>
+      <p className="welcome-sub">Билеты, брони и план по дням вместо поиска по почте и чатам.</p>
+      <Link to="/trips/new" className="btn btn-primary welcome-cta">Создать поездку</Link>
+      <p className="muted small welcome-note">Это 5 минут и без регистрации</p>
+      <ul className="welcome-benefits">
+        <li><span>📄</span><div><b>Загрузите билет</b>Рейс, даты и адреса заполнятся сами</div></li>
+        <li><span>🗺️</span><div><b>План и карта — автоматически</b>Всё по дням и на карте, даже без интернета</div></li>
+        <li><span>👥</span><div><b>Вместе с друзьями</b>Поделитесь поездкой или планируйте её вдвоём</div></li>
+      </ul>
+      <p className="welcome-trust">Бесплатно · без рекламы · работает без интернета</p>
+      <Link to="/settings" className="link welcome-login">У меня уже есть аккаунт — войти</Link>
+    </div>
+  )
+}
+
 export default function TripsList() {
   const trips = useLiveQuery(() => db.trips.toArray(), [])
   const sync = useSyncState()
   const sharedTrips = useSharedTrips()
   if (!trips) return null
+  if (sync.ready && !sync.user && trips.length === 0) return <Welcome />
 
   return (
     <>
+      <Brand />
       <PageHeader title="Поездки">
         <Link to="/trips/new" className="btn btn-primary hide-mobile">+ Новая поездка</Link>
       </PageHeader>
       {sync.ready && !sync.user && (
-        <Link to="/settings" className="banner">☁️ Войдите, чтобы поездки были одинаковыми на телефоне и компьютере →</Link>
+        <Link to="/settings" className="banner">☁️ Сохраните поездки в аккаунте — чтобы не потерять их и открыть на другом устройстве →</Link>
       )}
       {sync.user && <Link to="/settings" className="show-mobile account-link"><AccountBadge compact /></Link>}
 

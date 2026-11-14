@@ -7,6 +7,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { ShareSheet } from '../components/ShareSheet'
 import { MembersSheet } from '../components/MembersSheet'
 import { leaveTrip, useTripAccess } from '../members'
+import { useSyncState } from '../sync'
 import { Empty, Fab, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
@@ -73,6 +74,7 @@ export default function TripView() {
   const [leaving, setLeaving] = useState(false)
   const [leaveErr, setLeaveErr] = useState('')
   const access = useTripAccess(id)
+  const sync = useSyncState()
 
   // Билеты могли прийти с другого устройства или появиться раньше этой функции — подгоняем даты.
   useEffect(() => {
@@ -158,6 +160,9 @@ export default function TripView() {
 
       {access.shared && (
         <div className="shared-note">👥 Общая поездка · {access.canEdit ? 'вы можете добавлять и менять брони' : 'только просмотр'}</div>
+      )}
+      {sync.ready && !sync.user && items.length > 0 && (
+        <Link to="/settings" className="banner">☁️ Сохраните поездку в аккаунте — чтобы не потерять её и открыть на другом устройстве →</Link>
       )}
       {warnings.map((w, i) => <div key={i} className="warning">⚠️ {w}</div>)}
 

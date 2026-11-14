@@ -688,3 +688,21 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .nav-dot { position: absolute; top: -2px; right: -4px; width: 10px; height: 10px; border-radius: 50%; background: #ef4444; border: 2px solid var(--surface); }
 .thread-last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat textarea { width: 100%; }
+
+/* ---------- Первый экран для гостя ---------- */
+.brand-top { align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; color: var(--primary); margin-bottom: 6px; }
+.brand-top img { width: 28px; height: 28px; border-radius: 8px; }
+.welcome { max-width: 520px; margin: 0 auto; padding: 8px 0 24px; text-align: center; display: grid; justify-items: center; }
+.welcome-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.2rem; color: var(--primary); margin-bottom: 28px; }
+.welcome-brand img { width: 44px; height: 44px; border-radius: 12px; box-shadow: var(--shadow); }
+.welcome-title { font-size: 2rem; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+.welcome-sub { font-size: 1.1rem; color: #475569; margin: 0 0 24px; max-width: 400px; }
+.welcome-cta { font-size: 1.1rem; padding: 16px 36px; width: 100%; max-width: 340px; justify-content: center; }
+.welcome-note { margin: 10px 0 28px; }
+.welcome-benefits { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; width: 100%; text-align: left; }
+.welcome-benefits li { display: flex; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); }
+.welcome-benefits li > span { font-size: 1.8rem; flex: none; }
+.welcome-benefits div { color: var(--muted); font-size: 0.92rem; }
+.welcome-benefits b { display: block; color: var(--text); font-size: 1rem; }
+.welcome-trust { color: #475569; font-size: 0.9rem; margin: 0 0 16px; }
+.welcome-login { font-weight: 600; }

@@ -137,6 +137,8 @@ export interface Item {
   title: string
   place: string
   placeTo: string
+  placeLL?: [number, number] // координаты места, если выбрано из подсказок карты (широта, долгота)
+  placeToLL?: [number, number]
   startDate: string
   startTime: string // HH:MM, местное время, ''
   endDate: string

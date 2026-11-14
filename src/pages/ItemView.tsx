@@ -9,7 +9,8 @@ import { Attachments } from '../components/Attachments'
 import { useTripAccess } from '../members'
 import { CatIcon } from '../components/icons'
 
-function placeInfo(category: Item['category'], raw: string, provider: MapProvider): { text: string; href: string } {
+function placeInfo(category: Item['category'], raw: string, provider: MapProvider, ll?: [number, number]): { text: string; href: string } {
+  if (ll) return { text: raw, href: pointUrl(provider, ll) }
   const known = category === 'flight' ? matchAirport(raw) : category === 'transport' ? matchStation(raw) : null
   const text = known?.label ?? (category === 'transport' ? prettyStation(raw) : raw)
   if (known?.ll) return { text, href: pointUrl(provider, known.ll) }
@@ -44,10 +45,10 @@ export default function ItemView() {
 
       <dl className="details">
         {item.place && cfg.place && (
-          <><dt>{cfg.place}</dt><dd><a href={placeInfo(item.category, item.place, provider).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.place, provider).text}</a></dd></>
+          <><dt>{cfg.place}</dt><dd><a href={placeInfo(item.category, item.place, provider, item.placeLL).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.place, provider, item.placeLL).text}</a></dd></>
         )}
         {item.placeTo && cfg.placeTo && (
-          <><dt>{cfg.placeTo}</dt><dd><a href={placeInfo(item.category, item.placeTo, provider).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.placeTo, provider).text}</a></dd></>
+          <><dt>{cfg.placeTo}</dt><dd><a href={placeInfo(item.category, item.placeTo, provider, item.placeToLL).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.placeTo, provider, item.placeToLL).text}</a></dd></>
         )}
         {item.startDate && (<><dt>{cfg.start}</dt><dd className="strong">{formatDateTime(item.startDate, item.startTime)}</dd></>)}
         {(item.endDate || item.endTime) && cfg.end && (

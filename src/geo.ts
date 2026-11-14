@@ -100,6 +100,58 @@ export async function locate(text: string, context: string): Promise<LatLng | nu
   return geocodeOnce(t)
 }
 
+/* ---------- Поиск мест при вводе адреса ---------- */
+
+export interface PlaceHit { title: string; subtitle: string; text: string; ll: LatLng }
+
+const uniq = (hits: PlaceHit[]) => hits.filter((h, i) => hits.findIndex((x) => x.text === h.text) === i)
+
+/** Подсказки по мере ввода (сервис Photon на данных OpenStreetMap). near — искать ближе к этой точке. */
+export async function suggestPlaces(q: string, near: LatLng | null, signal?: AbortSignal): Promise<PlaceHit[]> {
+  const url = `https://photon.komoot.io/api/?limit=6&q=${encodeURIComponent(q)}` + (near ? `&lat=${near[0]}&lon=${near[1]}` : '')
+  const res = await fetch(url, { signal })
+  if (!res.ok) throw new Error('suggest ' + res.status)
+  const data = (await res.json()) as { features?: { geometry?: { coordinates?: [number, number] }; properties?: Record<string, string | undefined> }[] }
+  const hits: PlaceHit[] = []
+  for (const f of data.features ?? []) {
+    const c = f.geometry?.coordinates
+    const p = f.properties ?? {}
+    if (!c) continue
+    const street = [p.street, p.housenumber].filter(Boolean).join(', ')
+    const city = p.city || p.town || p.village || p.county || p.state || ''
+    const parts = [p.name, street, city !== p.name ? city : ''].filter(Boolean) as string[]
+    if (!parts.length) continue
+    const rest = [...parts.slice(1), p.country && p.country !== city ? p.country : ''].filter(Boolean).join(', ')
+    hits.push({ title: parts[0], subtitle: rest, text: parts.join(', '), ll: [c[1], c[0]] })
+  }
+  return uniq(hits)
+}
+
+/** Поиск по кнопке (Nominatim) — когда подсказки ничего не нашли. */
+export async function searchPlaces(q: string, context: string): Promise<PlaceHit[]> {
+  const ask = async (text: string): Promise<PlaceHit[]> => {
+    const run = queue.then(async () => {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=ru&q=${encodeURIComponent(text)}`
+      const res = await fetch(url, { headers: { Accept: 'application/json' } })
+      if (!res.ok) throw new Error('search ' + res.status)
+      const data = (await res.json()) as { lat: string; lon: string; name?: string; display_name: string }[]
+      await pause(1100)
+      return data.map((d) => {
+        const parts = d.display_name.split(', ')
+        const title = d.name || parts[0]
+        const rest = parts.filter((x) => x !== title && !/^\d{5,6}$/.test(x)).slice(0, 4)
+        return { title, subtitle: rest.join(', '), text: [title, ...rest.slice(0, 3)].join(', '), ll: [+d.lat, +d.lon] as LatLng }
+      })
+    })
+    queue = run.catch(() => pause(1100))
+    return run
+  }
+  const ctx = context.trim()
+  let hits = await ask(q)
+  if (!hits.length && ctx && !q.toLowerCase().includes(ctx.toLowerCase())) hits = await ask(`${q}, ${ctx}`)
+  return uniq(hits)
+}
+
 /* ---------- Точки поездки ---------- */
 
 export interface MapStop {
@@ -148,8 +200,8 @@ export function buildStops(trip: Trip, items: Item[]): MapStop[] {
       continue
     }
     if (item.category === 'car') {
-      if (item.place) stops.push({ key: item.id + ':from', item, category: 'car', role: cfg.start, query: item.place, context: ctx, dates: start ? [start] : [], time: item.startTime })
-      if (item.placeTo && item.placeTo !== item.place) stops.push({ key: item.id + ':to', item, category: 'car', role: cfg.end, query: item.placeTo, context: ctx, dates: end ? [end] : [], time: item.endTime })
+      if (item.place) stops.push({ key: item.id + ':from', item, category: 'car', role: cfg.start, query: item.place, context: ctx, known: item.placeLL, dates: start ? [start] : [], time: item.startTime })
+      if (item.placeTo && item.placeTo !== item.place) stops.push({ key: item.id + ':to', item, category: 'car', role: cfg.end, query: item.placeTo, context: ctx, known: item.placeToLL, dates: end ? [end] : [], time: item.endTime })
       continue
     }
     // жильё, события, другое: адрес, а если его нет — название (только вместе с городом поездки)
@@ -157,7 +209,7 @@ export function buildStops(trip: Trip, items: Item[]): MapStop[] {
     if (!query) continue
     const role = item.category === 'hotel' ? 'Жильё' : item.eventType ? '' : cfg.one
     stops.push({
-      key: item.id, item, category: item.category, role, query, context: ctx,
+      key: item.id, item, category: item.category, role, query, context: ctx, known: item.place ? item.placeLL : undefined,
       dates: item.category === 'hotel' ? daysBetween(start, end) : start ? [start] : [],
       time: item.category === 'hotel' ? '' : item.startTime,
     })

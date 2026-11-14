@@ -656,3 +656,16 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .shared-cta { margin-top: 30px; padding: 22px 18px; border-radius: var(--radius); background: linear-gradient(135deg, #e8f0ff, #f3e8ff); text-align: center; display: grid; gap: 10px; justify-items: center; }
 .shared-cta-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
 .shared-cta p { margin: 0; color: #334155; max-width: 420px; }
+
+/* ---------- Поиск места по карте ---------- */
+.place-input { display: grid; gap: 6px; }
+.place-hits { list-style: none; margin: 0; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); display: grid; }
+.place-hits button { width: 100%; display: flex; gap: 10px; align-items: flex-start; text-align: left; font: inherit; color: inherit; background: none; border: none; padding: 10px; border-radius: 12px; cursor: pointer; }
+.place-hits button:active, .place-hits button:hover { background: var(--primary-soft); }
+.place-hits li + li { border-top: 1px solid var(--border); }
+.place-hit-pin { flex: none; }
+.place-hit-body { display: grid; min-width: 0; }
+.place-hit-title { font-weight: 600; }
+.place-hit-sub { color: var(--muted); font-size: 0.85rem; }
+.place-found { color: #166534; font-size: 0.85rem; }
+.place-help { color: var(--muted); font-size: 0.85rem; }

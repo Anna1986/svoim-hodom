@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTripAccess } from '../members'
+import { PlaceInput } from '../components/PlaceInput'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { addAttachments, CATEGORIES, CATEGORY_ORDER, db, EVENT_TYPE_ORDER, EVENT_TYPES, newId, type Category, type EventType, type Item } from '../db'
 import { PageHeader } from '../components/ui'
 import { PendingFiles } from '../components/Attachments'
@@ -29,6 +31,8 @@ export default function ItemForm() {
   const [draft, setDraft] = useState<Draft>(() => emptyDraft(initialCat))
   const [tripId, setTripId] = useState(tripIdParam ?? '')
   const access = useTripAccess(tripId || undefined)
+  const tripOfItem = useLiveQuery(async () => (tripId ? (await db.trips.get(tripId)) ?? null : null), [tripId])
+  const near = tripOfItem?.destination || ''
   const [files, setFiles] = useState<File[]>([])
   const [loaded, setLoaded] = useState(!itemId)
   const [error, setError] = useState('')
@@ -50,6 +54,8 @@ export default function ItemForm() {
       if (!v || (onlyEmpty && next[k])) continue
       if (k === 'notes' && next.notes) next.notes = `${next.notes}\n${v}`
       else (next as Record<string, unknown>)[k] = v
+      if (k === 'place') next.placeLL = undefined
+      if (k === 'placeTo') next.placeToLL = undefined
       filled.push((label[k] || FIELD_NAMES[k]).toLowerCase())
     }
     setDraft(next)
@@ -81,6 +87,8 @@ export default function ItemForm() {
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => { setDraft((d) => ({ ...d, [k]: v })); setError('') }
   const cfg = CATEGORIES[draft.category]
+  // у билетов — вокзалы и аэропорты, их ищем по своей таблице; у остального — поиск места по карте
+  const mapSearch = draft.category !== 'flight' && draft.category !== 'transport'
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -94,6 +102,8 @@ export default function ItemForm() {
       title,
       place: cfg.place ? draft.place.trim() : '',
       placeTo: cfg.placeTo ? draft.placeTo.trim() : '',
+      placeLL: cfg.place && draft.place.trim() ? draft.placeLL : undefined,
+      placeToLL: cfg.placeTo && draft.placeTo.trim() ? draft.placeToLL : undefined,
       startTime: cfg.withTime ? draft.startTime : '',
       endDate: cfg.end ? draft.endDate : '',
       endTime: cfg.end && cfg.withTime ? draft.endTime : '',
@@ -169,13 +179,17 @@ export default function ItemForm() {
             {cfg.place && (
               <label className="field">
                 <span>{cfg.place}</span>
-                <input value={draft.place} onChange={(e) => set('place', e.target.value)} />
+                {mapSearch
+                  ? <PlaceInput value={draft.place} ll={draft.placeLL} near={near} onChange={(t, ll) => { setDraft((d) => ({ ...d, place: t, placeLL: ll })); setError('') }} />
+                  : <input value={draft.place} onChange={(e) => set('place', e.target.value)} />}
               </label>
             )}
             {cfg.placeTo && (
               <label className="field">
                 <span>{cfg.placeTo}</span>
-                <input value={draft.placeTo} onChange={(e) => set('placeTo', e.target.value)} />
+                {mapSearch
+                  ? <PlaceInput value={draft.placeTo} ll={draft.placeToLL} near={near} onChange={(t, ll) => { setDraft((d) => ({ ...d, placeTo: t, placeToLL: ll })); setError('') }} />
+                  : <input value={draft.placeTo} onChange={(e) => set('placeTo', e.target.value)} />}
               </label>
             )}
           </div>

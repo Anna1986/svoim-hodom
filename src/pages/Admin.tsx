@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { adminStats, isAdmin, supportList, userTrips, type Stats, type SupportRequest } from '../admin'
+import { adminMessageDone, adminMessages, adminStats, isAdmin, supportList, userTrips, type Stats, type SupportMessage, type SupportRequest } from '../admin'
 import { CATEGORIES, eventTypeOf, type Item, type Trip } from '../db'
 import { formatDateTime, formatRangeShort } from '../format'
 import { PageHeader } from '../components/ui'
@@ -31,12 +31,13 @@ export default function Admin() {
   const ok = useAdmin()
   const [stats, setStats] = useState<Stats | null>(null)
   const [reqs, setReqs] = useState<SupportRequest[]>([])
+  const [msgs, setMsgs] = useState<SupportMessage[]>([])
   const [err, setErr] = useState('')
 
   useEffect(() => {
     if (!ok) return
-    Promise.all([adminStats(), supportList()])
-      .then(([st, r]) => { setStats(st); setReqs(r) })
+    Promise.all([adminStats(), supportList(), adminMessages()])
+      .then(([st, r, m]) => { setStats(st); setReqs(r); setMsgs(m) })
       .catch((e) => { console.error(e); setErr('Не получилось загрузить статистику. Проверьте интернет.') })
   }, [ok])
 
@@ -84,7 +85,25 @@ export default function Admin() {
         </>
       )}
 
-      <h2 className="admin-h">Просят помощи</h2>
+      <h2 className="admin-h">Сообщения в поддержку{msgs.some((m) => !m.done_at) && ` · новых ${msgs.filter((m) => !m.done_at).length}`}</h2>
+      {msgs.length === 0 ? <p className="muted">Сообщений пока нет.</p> : (
+        <div className="rows">
+          {msgs.map((m) => (
+            <div key={m.id} className={`msg ${m.done_at ? 'msg-done' : ''}`}>
+              <div className="row-sub">{m.name || m.email} · {m.email} · {fmt(m.created_at)}</div>
+              <div className="msg-text">{m.text}</div>
+              <div className="person-actions msg-actions">
+                <a className="link-btn" href={`mailto:${m.email}?subject=${encodeURIComponent('Своим ходом — ответ поддержки')}&body=${encodeURIComponent('\n\n> ' + m.text.replace(/\n/g, '\n> '))}`}>Ответить по почте</a>
+                <button className="link-btn" onClick={async () => { await adminMessageDone(m.id, !m.done_at); setMsgs(await adminMessages()) }}>
+                  {m.done_at ? 'Вернуть в новые' : 'Отметить решённым'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h2 className="admin-h">Открыли доступ к поездкам</h2>
       {reqs.length === 0 ? (
         <p className="muted">Сейчас никто не открыл доступ поддержке. Пользователь открывает его сам в профиле на 24 часа.</p>
       ) : (

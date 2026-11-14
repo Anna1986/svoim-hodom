@@ -85,3 +85,23 @@ export async function myAccessLog(): Promise<string[]> {
   const { data } = await supabase.from('support_access_log').select('at').order('at', { ascending: false }).limit(10)
   return (data ?? []).map((r: { at: string }) => r.at)
 }
+
+/* ---------- Сообщения в поддержку ---------- */
+
+export async function sendSupportMessage(text: string): Promise<string> {
+  const { error } = await supabase.from('support_messages').insert({ text: text.trim().slice(0, 4000) })
+  return error ? (navigator.onLine ? 'Не получилось отправить. Попробуйте ещё раз.' : 'Нужен интернет, чтобы отправить сообщение.') : ''
+}
+
+export interface SupportMessage { id: number; user_id: string; email: string; name: string; text: string; created_at: string; done_at: string | null }
+
+export async function adminMessages(): Promise<SupportMessage[]> {
+  const { data, error } = await supabase.rpc('admin_messages')
+  if (error) throw error
+  return (data ?? []) as SupportMessage[]
+}
+
+export async function adminMessageDone(id: number, done: boolean) {
+  const { error } = await supabase.rpc('admin_message_done', { p_id: id, p_done: done })
+  if (error) throw error
+}

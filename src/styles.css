@@ -669,3 +669,8 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .place-hit-sub { color: var(--muted); font-size: 0.85rem; }
 .place-found { color: #166534; font-size: 0.85rem; }
 .place-help { color: var(--muted); font-size: 0.85rem; }
+.support-btn { display: flex; width: 100%; justify-content: center; margin-top: 10px; }
+.msg { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px 14px; display: grid; gap: 6px; }
+.msg-done { opacity: 0.6; }
+.msg-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg-actions { padding-left: 0; }

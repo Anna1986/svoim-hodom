@@ -1,4 +1,4 @@
-import type { Category, DocKind } from '../db'
+import type { Category } from '../db'
 import { CATEGORIES } from '../db'
 import flight from '../assets/icons/flight.png'
 import transport from '../assets/icons/transport.png'
@@ -18,14 +18,6 @@ export function CatIcon({ c, size = 44, className = '' }: { c: Category; size?: 
   return <img src={CAT_IMG[c]} width={size} height={size} alt={CATEGORIES[c].one} className={`cat-icon ${className}`} draggable={false} />
 }
 
-const DOC_IMG: Record<DocKind, string> = {
-  'intl-passport': visa, passport: visa, license: car, insurance, card: other, other,
-}
-
-export function DocIcon({ k, size = 44 }: { k: DocKind; size?: number }) {
-  return <img src={DOC_IMG[k]} width={size} height={size} alt="" className="cat-icon" draggable={false} />
-}
-
 /* ---------- Линейные иконки интерфейса ---------- */
 
 type P = { size?: number; className?: string }
@@ -40,11 +32,6 @@ export const IconSuitcase = ({ size = 24, className = '' }: P) => svg(size, clas
   <rect x="3" y="7" width="18" height="13" rx="3" />
   <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
   <path d="M3 12.5h18" />
-</>)
-
-export const IconDoc = ({ size = 24, className = '' }: P) => svg(size, className, <>
-  <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
-  <path d="M14 3v5h5M9 13h6M9 17h6" />
 </>)
 
 export const IconUser = ({ size = 24, className = '' }: P) => svg(size, className, <>

@@ -151,18 +151,10 @@ export interface Item {
   updatedAt: number
 }
 
-/* ---------------- Мои документы (не привязаны к поездке) ---------------- */
+/* Legacy personal documents: retained for existing data, sync and backup compatibility.
+ * The standalone documents feature has been removed; new records are not created. */
 
 export type DocKind = 'intl-passport' | 'passport' | 'license' | 'insurance' | 'card' | 'other'
-
-export const DOC_KINDS: Record<DocKind, { label: string; icon: string }> = {
-  'intl-passport': { label: 'Загранпаспорт', icon: '🛂' },
-  passport: { label: 'Паспорт', icon: '🪪' },
-  license: { label: 'Водительские права', icon: '🚗' },
-  insurance: { label: 'Страховой полис', icon: '🛡️' },
-  card: { label: 'Карта лояльности', icon: '💳' },
-  other: { label: 'Другой документ', icon: '📄' },
-}
 
 export interface Doc {
   id: string
@@ -234,13 +226,6 @@ export async function deleteItem(id: string) {
   await db.transaction('rw', db.items, db.attachments, async () => {
     await db.attachments.where('ownerId').equals(id).delete()
     await db.items.delete(id)
-  })
-}
-
-export async function deleteDoc(id: string) {
-  await db.transaction('rw', db.docs, db.attachments, async () => {
-    await db.attachments.where('ownerId').equals(id).delete()
-    await db.docs.delete(id)
   })
 }
 

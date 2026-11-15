@@ -120,7 +120,7 @@ export function MembersSheet({ tripId, title, access, onClose }: { tripId: strin
                 <button className="btn btn-primary share-create" onClick={invite} disabled={busy}>
                   {busy ? 'Готовлю ссылку…' : 'Отправить приглашение'}
                 </button>
-                <p className="muted small">Человек откроет ссылку, войдёт или зарегистрируется — и поездка появится у него. Ваши личные документы участникам не видны.</p>
+                <p className="muted small">Человек откроет ссылку, войдёт или зарегистрируется — и поездка появится у него. Участникам доступны только данные этой поездки.</p>
                 {link && (
                   <div className="invite-link">
                     <span className="break">{link}</span>

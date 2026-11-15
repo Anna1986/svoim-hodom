@@ -47,7 +47,7 @@ export default function Settings() {
     setBusy(true); setMsg('')
     try {
       const r = await importBackup(file)
-      setMsg(`Готово: поездок — ${r.trips}, записей — ${r.items}, документов — ${r.docs}, файлов — ${r.files}.`)
+      setMsg(`Готово: поездок — ${r.trips}, записей — ${r.items}, файлов — ${r.files}.`)
     } catch (err) {
       setMsg('Не получилось загрузить: ' + (err as Error).message)
     } finally {

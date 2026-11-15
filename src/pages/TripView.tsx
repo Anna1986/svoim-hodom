@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, eventTypeOf, type Category, type Item } from '../db'
 import { formatDay, formatRangeShort, formatShort, plural, todayISO } from '../format'
-import { buildPlan, fittedDates, fitTripToTickets, passportWarnings, tripCountdown, tripPhase } from '../trip'
+import { buildPlan, fittedDates, fitTripToTickets, tripCountdown, tripPhase } from '../trip'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { ShareSheet } from '../components/ShareSheet'
 import { MembersSheet } from '../components/MembersSheet'
@@ -68,7 +68,6 @@ export default function TripView() {
     }
     return counts
   }, [id])
-  const docs = useLiveQuery(() => db.docs.toArray(), [])
   const [sharing, setSharing] = useState(false)
   const [membersOpen, setMembersOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -83,13 +82,12 @@ export default function TripView() {
     if (next.startDate !== trip.startDate || next.endDate !== trip.endDate) void fitTripToTickets(trip.id)
   }, [trip, items, access.canEdit])
 
-  if (trip === undefined || !items || !fileCounts || !docs) return null
+  if (trip === undefined || !items || !fileCounts) return null
   if (trip === null) {
     return <Empty icon="🤷"><p>Поездка не найдена.</p><Link to="/trips" className="btn">К поездкам</Link></Empty>
   }
 
   const countdown = tripCountdown(trip)
-  const warnings = tripPhase(trip) !== 'past' ? passportWarnings(trip, docs) : []
   const { byDay, undated } = buildPlan(items)
   const today = todayISO()
   const nextKey = byDay.flatMap(([, ev]) => ev).find((e) => e.date >= today)?.key
@@ -164,7 +162,6 @@ export default function TripView() {
       {sync.ready && !sync.user && items.length > 0 && (
         <Link to="/settings" className="banner">☁️ Сохраните поездку в аккаунте — чтобы не потерять её и открыть на другом устройстве →</Link>
       )}
-      {warnings.map((w, i) => <div key={i} className="warning">⚠️ {w}</div>)}
 
       <div className="tabs" role="tablist">
         <button role="tab" className={`tab ${tab === 'folders' ? 'tab-active' : ''}`} onClick={() => setParams({}, { replace: true })}>

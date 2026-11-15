@@ -6,11 +6,10 @@ import TripView from './pages/TripView'
 import AddItem from './pages/AddItem'
 import ItemForm from './pages/ItemForm'
 import ItemView from './pages/ItemView'
-import { DocForm, DocsList, DocView } from './pages/Docs'
 import Settings from './pages/Settings'
 import { AccountBadge, Avatar } from './components/Account'
 import { useSyncState } from './sync'
-import { IconCompass, IconDoc, IconSuitcase, IconUser } from './components/icons'
+import { IconCompass, IconSuitcase, IconUser } from './components/icons'
 import Explore from './pages/Explore'
 import SharedTrip from './pages/SharedTrip'
 import ResetPassword from './pages/ResetPassword'
@@ -22,7 +21,6 @@ import { pendingInvite } from './members'
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
   { to: '/explore', match: ['/explore'], label: 'Куда поехать', Icon: IconCompass },
-  { to: '/docs', match: ['/docs'], label: 'Документы', Icon: IconDoc },
 ]
 
 export default function App() {
@@ -83,10 +81,6 @@ export default function App() {
           <Route path="/trips/:id/items/new" element={<ItemForm />} />
           <Route path="/items/:itemId" element={<ItemView />} />
           <Route path="/items/:itemId/edit" element={<ItemForm />} />
-          <Route path="/docs" element={<DocsList />} />
-          <Route path="/docs/new" element={<DocForm />} />
-          <Route path="/docs/:id" element={<DocView />} />
-          <Route path="/docs/:id/edit" element={<DocForm />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/explore" element={<Explore />} />

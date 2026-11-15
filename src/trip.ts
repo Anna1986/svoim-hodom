@@ -1,4 +1,4 @@
-import { CATEGORIES, db, eventTypeOf, type Doc, type Item, type Trip } from './db'
+import { CATEGORIES, db, eventTypeOf, type Item, type Trip } from './db'
 import { daysBetween, daysUntil, days, todayISO } from './format'
 
 export type Phase = 'current' | 'upcoming' | 'past' | 'undated'
@@ -75,31 +75,6 @@ export function buildPlan(items: Item[]): { byDay: [string, PlanEvent[]][]; unda
     map.get(e.date)!.push(e)
   }
   return { byDay: [...map.entries()], undated }
-}
-
-/* ---------- Сроки действия ---------- */
-
-export function expiryHint(expiry: string): { text: string; tone: 'ok' | 'soon' | 'late' } | null {
-  const n = daysUntil(expiry)
-  if (n === null) return null
-  if (n < 0) return { text: 'срок истёк', tone: 'late' }
-  if (n <= 180) return { text: `истекает через ${days(n)}`, tone: 'soon' }
-  return null
-}
-
-/** Многие страны требуют, чтобы загранпаспорт действовал ещё ~6 месяцев после выезда. */
-export function passportWarnings(trip: Trip, docs: Doc[]): string[] {
-  const tripEnd = trip.endDate || trip.startDate
-  if (!tripEnd) return []
-  const [y, m, d] = tripEnd.split('-').map(Number)
-  const limit = new Date(y, m - 1 + 6, d)
-  return docs
-    .filter((doc) => doc.kind === 'intl-passport' && doc.expiryDate)
-    .filter((doc) => {
-      const [ey, em, ed] = doc.expiryDate.split('-').map(Number)
-      return new Date(ey, em - 1, ed) < limit
-    })
-    .map((doc) => `${doc.title || 'Загранпаспорт'}${doc.holder ? ` (${doc.holder})` : ''} действует меньше 6 месяцев после окончания поездки. Многие страны этого не допускают — проверьте требования.`)
 }
 
 /* ---------- Даты поездки по билетам ---------- */

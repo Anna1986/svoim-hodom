@@ -135,7 +135,7 @@ export function AccountSection() {
           </div>
         </div>
         <p className="profile-sync"><SyncLine /></p>
-        <p className="muted small">Ваши поездки, документы и файлы одинаковые на всех устройствах, где вы вошли в этот аккаунт.</p>
+        <p className="muted small">Ваши поездки, события и файлы одинаковые на всех устройствах, где вы вошли в этот аккаунт.</p>
         <div className="form-actions">
           <button className="btn btn-primary" onClick={() => syncNow()} disabled={s.syncing}>Синхронизировать</button>
           <Link to="/reset-password" className="btn">Сменить пароль</Link>
@@ -150,7 +150,7 @@ export function AccountSection() {
       <h2>{mode === 'forgot' ? 'Восстановление пароля' : 'Вход в личный кабинет'}</h2>
       {mode !== 'forgot' && (
         <>
-      <p className="muted">Войдите, чтобы на телефоне и компьютере были одни и те же поездки, документы и файлы. На каждом устройстве нужно войти один раз.</p>
+      <p className="muted">Войдите, чтобы на телефоне и компьютере были одни и те же поездки, события и файлы. На каждом устройстве нужно войти один раз.</p>
       <div className="tabs tabs-small">
         <button className={`tab ${mode === 'in' ? 'tab-active' : ''}`} onClick={() => { setMode('in'); setErr('') }}>Вход</button>
         <button className={`tab ${mode === 'up' ? 'tab-active' : ''}`} onClick={() => { setMode('up'); setErr('') }}>Регистрация</button>
@@ -168,7 +168,7 @@ export function AccountSection() {
             <input type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
         )}
-        {mode === 'forgot' && <p className="muted small">Пришлём на почту ссылку — по ней вы зададите новый пароль. Поездки и документы сохранятся.</p>}
+        {mode === 'forgot' && <p className="muted small">Пришлём на почту ссылку — по ней вы зададите новый пароль. Поездки и файлы сохранятся.</p>}
         {err && <div className="error">{err}</div>}
         {msg && <p className="notice">{msg}</p>}
         <div className="form-actions">

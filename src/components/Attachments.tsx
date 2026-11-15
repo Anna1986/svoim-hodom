@@ -58,7 +58,7 @@ function Tile({ a, readOnly }: { a: Attachment; readOnly: boolean }) {
   )
 }
 
-/** Файлы, уже сохранённые у записи или документа. */
+/** Файлы, уже сохранённые у записи поездки. */
 export function Attachments({ ownerType, ownerId, readOnly = false }: { ownerType: OwnerType; ownerId: string; readOnly?: boolean }) {
   const list = useLiveQuery(() => db.attachments.where('ownerId').equals(ownerId).sortBy('createdAt'), [ownerId])
   const [busy, setBusy] = useState(false)
@@ -82,7 +82,7 @@ export function Attachments({ ownerType, ownerId, readOnly = false }: { ownerTyp
       {list && list.length > 0 ? (
         <ul className="att-list">{list.map((a) => <Tile key={a.id} a={a} readOnly={readOnly} />)}</ul>
       ) : (
-        <p className="muted">{readOnly ? 'Файлов нет.' : 'Прикрепите билет, бронь, ваучер или фото документа.'}</p>
+        <p className="muted">{readOnly ? 'Файлов нет.' : 'Прикрепите билет, бронь, ваучер или файл события.'}</p>
       )}
       {!readOnly && (
         <label className={`btn btn-soft att-add ${busy ? 'disabled' : ''}`}>

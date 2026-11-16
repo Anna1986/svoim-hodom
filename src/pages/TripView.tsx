@@ -136,10 +136,9 @@ export default function TripView() {
 
   return (
     <>
-      <div className="hero-top">
+      <div className="hero-top" style={{ flexWrap: 'wrap', rowGap: 10 }}>
         <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
-        <span className="hero-actions">
-          <Link className="hero-back share-btn" to={`/trips/${trip.id}/today`}>☀️ Мой день</Link>
+        <span className="hero-actions" style={{ flexWrap: 'wrap', justifyContent: 'flex-end', rowGap: 8 }}>
           <button className="hero-back share-btn" onClick={() => setMembersOpen(true)}>👥 Участники</button>
           {!access.shared && <button className="hero-back share-btn" onClick={() => setSharing(true)}>⤴︎ Поделиться</button>}
         </span>
@@ -156,6 +155,9 @@ export default function TripView() {
           {countdown && <span className={`hero-pill hero-pill-${tripPhase(trip)}`}><IconClock /> {countdown}</span>}
         </div>
       </header>
+      <div style={{ margin: '12px 0 16px' }}>
+        <Link to={`/trips/${trip.id}/today`} className="btn btn-soft" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', boxSizing: 'border-box' }}>☀️ Мой день — план на сегодня</Link>
+      </div>
 
       {access.shared && (
         <div className="shared-note">👥 Общая поездка · {access.canEdit ? 'вы можете добавлять и менять брони' : 'только просмотр'}</div>

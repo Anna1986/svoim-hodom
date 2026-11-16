@@ -139,6 +139,7 @@ export default function TripView() {
       <div className="hero-top">
         <Link to="/trips" className="hero-back"><IconBack size={18} /> Поездки</Link>
         <span className="hero-actions">
+          <Link className="hero-back share-btn" to={`/trips/${trip.id}/today`}>☀️ Мой день</Link>
           <button className="hero-back share-btn" onClick={() => setMembersOpen(true)}>👥 Участники</button>
           {!access.shared && <button className="hero-back share-btn" onClick={() => setSharing(true)}>⤴︎ Поделиться</button>}
         </span>

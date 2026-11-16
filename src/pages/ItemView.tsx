@@ -8,8 +8,10 @@ import { CopyValue, Empty, Linkify, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
 import { useTripAccess } from '../members'
 import { CatIcon } from '../components/icons'
+import { useState } from 'react'
+import { EventMembersSheet } from '../components/EventMembersSheet'
 
-function placeInfo(category: Item['category'], raw: string, provider: MapProvider, ll?: [number, number]): { text: string; href: string } {
+export function placeInfo(category: Item['category'], raw: string, provider: MapProvider, ll?: [number, number]): { text: string; href: string } {
   if (ll) return { text: raw, href: pointUrl(provider, ll) }
   const known = category === 'flight' ? matchAirport(raw) : category === 'transport' ? matchStation(raw) : null
   const text = known?.label ?? (category === 'transport' ? prettyStation(raw) : raw)
@@ -22,6 +24,7 @@ export default function ItemView() {
   const { itemId } = useParams()
   const navigate = useNavigate()
   const provider = useMapProvider()
+  const [membersOpen, setMembersOpen] = useState(false)
   const item = useLiveQuery(async () => (await db.items.get(itemId!)) ?? null, [itemId])
   const trip = useLiveQuery(async () => (item ? (await db.trips.get(item.tripId)) ?? null : null), [item?.tripId])
   const access = useTripAccess(item?.tripId)
@@ -59,6 +62,15 @@ export default function ItemView() {
       </dl>
 
       {item.notes && <p className="description"><Linkify text={item.notes} /></p>}
+
+      {item.category === 'voucher' && access.role === 'owner' && (
+        <section className="section">
+          <h2>Участники события</h2>
+          <p className="muted">Пригласите по ссылке и выберите доступ: только это событие или вся поездка.</p>
+          <button className="btn btn-soft" onClick={() => setMembersOpen(true)}>👥 Добавить участника</button>
+        </section>
+      )}
+      {membersOpen && item.category === 'voucher' && access.role === 'owner' && <EventMembersSheet itemId={item.id} title={item.title} onClose={() => setMembersOpen(false)} />}
 
       <Attachments ownerType="item" ownerId={item.id} readOnly={!access.canEdit} />
 

@@ -706,3 +706,7 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 .welcome-benefits b { display: block; color: var(--text); font-size: 1rem; }
 .welcome-trust { color: #475569; font-size: 0.9rem; margin: 0 0 16px; }
 .welcome-login { font-weight: 600; }
+
+/* Invitation access options use the existing mobile sheet layout. */
+.event-invite-options { border: 0; margin: 0; padding: 0; min-width: 0; }
+.event-invite-options legend { margin-bottom: 8px; font-weight: 600; }

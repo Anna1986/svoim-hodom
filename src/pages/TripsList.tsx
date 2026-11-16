@@ -9,6 +9,7 @@ import { coverFor } from '../covers'
 import { IconCalendar, IconClock, IconPin } from '../components/icons'
 import { useSyncState } from '../sync'
 import { useSharedTrips } from '../members'
+import { InvitedEvents } from '../components/InvitedEvents'
 
 const SECTIONS: { phase: Phase; title: string }[] = [
   { phase: 'current', title: 'Сейчас' },
@@ -78,6 +79,8 @@ export default function TripsList() {
         <Link to="/settings" className="banner">☁️ Сохраните поездки в аккаунте — чтобы не потерять их и открыть на другом устройстве →</Link>
       )}
       {sync.user && <Link to="/settings" className="show-mobile account-link"><AccountBadge compact /></Link>}
+
+      <InvitedEvents />
 
       {trips.length === 0 ? (
         <Empty icon="🧳">

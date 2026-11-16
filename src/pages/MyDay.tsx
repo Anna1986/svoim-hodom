@@ -6,7 +6,7 @@ import { todayISO, formatDay } from '../format'
 
 export default function MyDay() {
   const { id } = useParams()
-  const trip = useLiveQuery(() => db.trips.get(id!), [id])
+  const trip = useLiveQuery(async () => (await db.trips.get(id!)) ?? null, [id])
   const items = useLiveQuery(() => db.items.where('tripId').equals(id!).toArray(), [id])
   if (trip === undefined || items === undefined) return <p className="muted">Загружаем день…</p>
   if (!trip) return <p>Поездка не найдена. <Link to="/trips">К поездкам</Link></p>

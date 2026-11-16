@@ -32,7 +32,7 @@ create policy "event invites own" on public.event_invites for all to authenticat
   using (owner_id = (select auth.uid()))
   with check (owner_id = (select auth.uid()) and exists (
     select 1 from public.records r where r.user_id = (select auth.uid())
-      and r.id = item_id and r.kind = 'item' and r.data->>'category' = 'voucher' and not r.deleted
+      and r.id = event_invites.item_id and r.kind = 'item' and r.data->>'category' = 'voucher' and not r.deleted
   ));
 
 create or replace function private.event_access(p_owner uuid, p_item text) returns boolean

@@ -25,6 +25,12 @@ insert into public.event_invites(token,item_id,scope,role) values
  ('event-view-01234567890123456789','test-event','event','viewer'),
  ('trip-edit-012345678901234567890','test-event','trip','editor');
 select pg_temp.check_true((select count(*) = 0 from public.event_people('test-event')), 'empty participant list');
+do $$ begin
+ begin
+  insert into public.event_invites(token,item_id,scope,role) values ('invalid-target-012345678901234','test-hotel','event','viewer');
+  raise exception 'FAILED: owner can create an event invite for a non-event';
+ exception when insufficient_privilege then null; end;
+end $$;
 reset role;
 set local role anon;
 select set_config('request.jwt.claim.sub','',true);

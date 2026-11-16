@@ -155,3 +155,11 @@ export async function adminReply(userId: string, text: string): Promise<string> 
   const { error } = await supabase.rpc('admin_reply', { p_user: userId, p_text: text })
   return error ? offline('Не получилось отправить. Попробуйте ещё раз.') : ''
 }
+
+/* ---------- Реестр пользователей (только администратор, проверка на сервере) ---------- */
+export interface AdminUserRow { id: string; email: string | null; created_at: string; last_sign_in_at: string | null; trips_count: number }
+export async function adminUsersList(): Promise<AdminUserRow[]> {
+  const { data, error } = await supabase.rpc('admin_users_list')
+  if (error) throw error
+  return (data ?? []) as AdminUserRow[]
+}

@@ -17,6 +17,9 @@ import Admin, { AdminChat, AdminUser } from './pages/Admin'
 import { useSupportUnread } from './admin'
 import Join from './pages/Join'
 import { pendingInvite } from './members'
+import { pendingEventInvite } from './eventMembers'
+import EventJoin from './pages/EventJoin'
+import GuestEvent from './pages/GuestEvent'
 
 const NAV = [
   { to: '/trips', match: ['/trips', '/items'], label: 'Поездки', Icon: IconSuitcase },
@@ -32,6 +35,11 @@ export default function App() {
   // Приглашение в поездку открыли до входа — после входа возвращаемся к нему
   const navigate = useNavigate()
   useEffect(() => {
+    const eventToken = pendingEventInvite()
+    if (sync.user && eventToken) {
+      if (!pathname.startsWith('/event-join/')) navigate(`/event-join/${eventToken}`, { replace: true })
+      return
+    }
     const token = pendingInvite()
     if (sync.user && token && !pathname.startsWith('/join/')) navigate(`/join/${token}`, { replace: true })
   }, [sync.user?.id])
@@ -85,6 +93,8 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/join/:token" element={<Join />} />
+          <Route path="/event-join/:token" element={<EventJoin />} />
+          <Route path="/events/:ownerId/:itemId" element={<GuestEvent />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/chat/:userId" element={<AdminChat />} />
           <Route path="/admin/u/:userId" element={<AdminUser />} />

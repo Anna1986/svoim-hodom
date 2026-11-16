@@ -337,6 +337,10 @@ async function applyRows(uid: string, rows: Row[], blobs: Map<string, Blob>) {
 
 /** Принимаем записи с сервера: файлы скачиваем заранее — внутри транзакции IndexedDB сеть недоступна. */
 async function receive(uid: string, rows: Row[]) {
+  // Event-only invitations are loaded on their own screen, outside the trip database.
+  // Filter before downloading blobs so event guests do not fill the trip sync cache.
+  const shared = readShared(uid)
+  rows = rows.filter((r) => r.user_id === uid || (r.trip_id && shared[r.trip_id]))
   if (!rows.length) return
   const blobs = new Map<string, Blob>()
   const failed: string[] = []

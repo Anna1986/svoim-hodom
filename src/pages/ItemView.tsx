@@ -8,7 +8,8 @@ import { CopyValue, Empty, Linkify, PageHeader } from '../components/ui'
 import { Attachments } from '../components/Attachments'
 import { useTripAccess } from '../members'
 import { CatIcon } from '../components/icons'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { eventPeople, type EventPerson } from '../eventMembers'
 import { EventMembersSheet } from '../components/EventMembersSheet'
 
 export function placeInfo(category: Item['category'], raw: string, provider: MapProvider, ll?: [number, number]): { text: string; href: string } {
@@ -25,9 +26,21 @@ export default function ItemView() {
   const navigate = useNavigate()
   const provider = useMapProvider()
   const [membersOpen, setMembersOpen] = useState(false)
+  const [participants, setParticipants] = useState<EventPerson[] | null>(null)
+  const [participantsError, setParticipantsError] = useState('')
   const item = useLiveQuery(async () => (await db.items.get(itemId!)) ?? null, [itemId])
   const trip = useLiveQuery(async () => (item ? (await db.trips.get(item.tripId)) ?? null : null), [item?.tripId])
   const access = useTripAccess(item?.tripId)
+
+  useEffect(() => {
+    if (!itemId || item?.category !== 'voucher' || access.role !== 'owner') return
+    let cancelled = false
+    const refresh = () => { eventPeople(itemId).then(rows => { if (!cancelled) { setParticipants(rows); setParticipantsError('') } }).catch(() => { if (!cancelled) setParticipantsError('Не удалось загрузить участников.') }) }
+    refresh()
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { cancelled = true; document.removeEventListener('visibilitychange', onVisible) }
+  }, [itemId, item?.category, access.role, membersOpen])
 
   if (item === undefined) return null
   if (item === null) return <Empty icon="🤷"><p>Запись не найдена.</p><Link to="/trips" className="btn">К поездкам</Link></Empty>
@@ -66,7 +79,14 @@ export default function ItemView() {
       {item.category === 'voucher' && access.role === 'owner' && (
         <section className="section">
           <h2>Участники события</h2>
-          <p className="muted">Пригласите по ссылке и выберите доступ: только это событие или вся поездка.</p>
+          {participants === null && !participantsError && <p className="muted small">Загружаем участников…</p>}
+          {participantsError && <p className="error">{participantsError}</p>}
+          {participants?.length === 0 && <p className="muted">Пока никто не присоединился.</p>}
+          {!!participants?.length && <ul className="people">{participants.map(p => <li key={p.user_id} className="person">
+            <span className="person-avatar">{(p.name || '?').trim().charAt(0).toUpperCase()}</span>
+            <span className="person-body"><span className="person-name">{p.name}</span><span className="muted small">{p.scope === 'trip' ? 'Доступ ко всей поездке' : 'Участник события'}</span></span>
+          </li>)}</ul>}
+          <p className="muted small">Список обновляется при возвращении в приложение.</p>
           <button className="btn btn-soft" onClick={() => setMembersOpen(true)}>👥 Добавить участника</button>
         </section>
       )}

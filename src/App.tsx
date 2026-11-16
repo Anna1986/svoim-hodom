@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import TripsList from './pages/TripsList'
+import MyDay from './pages/MyDay'
 import TripForm from './pages/TripForm'
 import TripView from './pages/TripView'
 import AddItem from './pages/AddItem'
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="/trips" element={<TripsList />} />
           <Route path="/trips/new" element={<TripForm />} />
           <Route path="/trips/:id" element={<TripView />} />
+          <Route path="/trips/:id/today" element={<MyDay />} />
           <Route path="/trips/:id/edit" element={<TripForm />} />
           <Route path="/trips/:id/add" element={<AddItem />} />
           <Route path="/trips/:id/items/new" element={<ItemForm />} />

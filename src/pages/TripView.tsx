@@ -8,7 +8,7 @@ import { ShareSheet } from '../components/ShareSheet'
 import { MembersSheet } from '../components/MembersSheet'
 import { leaveTrip, useTripAccess } from '../members'
 import { useSyncState } from '../sync'
-import { Empty, Fab, Linkify } from '../components/ui'
+import { Empty, Linkify } from '../components/ui'
 import { coverFor } from '../covers'
 import { CatIcon, IconBack, IconCalendar, IconChevron, IconClock, IconList, IconPin, IconTicket } from '../components/icons'
 import { PlanCalendar } from '../components/PlanCalendar'
@@ -321,7 +321,6 @@ export default function TripView() {
       </div>
       {leaveErr && <div className="error">{leaveErr}</div>}
 
-      {access.canEdit && <Fab to={addLink} label="Добавить" />}
     </>
   )
 }

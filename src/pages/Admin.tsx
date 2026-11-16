@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { adminReply, adminStats, adminThread, adminThreads, isAdmin, supportList, userTrips, type Stats, type SupportRequest, type Thread } from '../admin'
+import { adminReply, adminUsersList, type AdminUserRow, adminStats, adminThread, adminThreads, isAdmin, supportList, userTrips, type Stats, type SupportRequest, type Thread } from '../admin'
 import { Chat } from '../components/Chat'
 import { CATEGORIES, eventTypeOf, type Item, type Trip } from '../db'
 import { formatDateTime, formatRangeShort } from '../format'
@@ -31,6 +31,8 @@ function Num({ n, label, sub }: { n: number; label: string; sub?: string }) {
 export default function Admin() {
   const ok = useAdmin()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [users, setUsers] = useState<AdminUserRow[]>([])
+  const [usersErr, setUsersErr] = useState('')
   const [reqs, setReqs] = useState<SupportRequest[]>([])
   const [threads, setThreads] = useState<Thread[]>([])
   const [err, setErr] = useState('')
@@ -40,6 +42,10 @@ export default function Admin() {
     Promise.all([adminStats(), supportList(), adminThreads()])
       .then(([st, r, m]) => { setStats(st); setReqs(r); setThreads(m) })
       .catch((e) => { console.error(e); setErr('Не получилось загрузить статистику. Проверьте интернет.') })
+  }, [ok])
+  useEffect(() => {
+    if (!ok) return
+    adminUsersList().then(setUsers).catch(() => setUsersErr('Не удалось загрузить пользователей.'))
   }, [ok])
 
   if (ok === null) return null
@@ -74,6 +80,21 @@ export default function Admin() {
             <Num n={stats.users_total} label="зарегистрировано" />
             <Num n={stats.users_7d} label="новых за 7 дней" />
             <Num n={stats.users_active_7d} label="активных за 7 дней" sub="что-то меняли" />
+          </div>
+
+          <h2 className="admin-h">Зарегистрированные пользователи</h2>
+          <p className="muted small">Доступно только администратору. Данные поездок пользователей не раскрываются.</p>
+          {usersErr && <p className="error">{usersErr}</p>}
+          {users.length === 0 && !usersErr && <p className="muted">Нет пользователей или список загружается.</p>}
+          <div className="rows">
+            {users.map(u => <div className="row" key={u.id}>
+              <span className="row-body">
+                <span className="row-title">{u.email || 'Без email'}</span>
+                <span className="row-sub">Регистрация: {fmt(u.created_at)}</span>
+                <span className="row-sub">Последний вход: {u.last_sign_in_at ? fmt(u.last_sign_in_at) : 'ещё не входил'}</span>
+                <span className="row-sub">Поездок: {u.trips_count}</span>
+              </span>
+            </div>)}
           </div>
 
           <h2 className="admin-h">Поездки</h2>

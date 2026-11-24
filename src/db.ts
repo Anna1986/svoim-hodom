@@ -145,7 +145,7 @@ export interface Item {
   endDate: string
   endTime: string
   bookingRef: string
-  ticketPrice?: TicketPrice // общая стоимость билетов или всего периода проживания, в минимальных единицах валюты
+  ticketPrice?: TicketPrice // общая стоимость записи (жильё — за весь период), в минимальных единицах валюты
   eventType?: EventType // только для событий
   link: string
   notes: string

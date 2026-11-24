@@ -11,7 +11,7 @@ import { fitTripToTickets } from '../trip'
 import { TicketImport, type ImportResult } from '../components/TicketImport'
 import { takePendingImport } from '../ticketImport'
 import { FIELD_NAMES, type ParsedFields } from '../ticketParse'
-import { CURRENCIES, hasTicketPrice, isCurrency, parseTicketPrice, priceInput, type Currency, type TicketPrice } from '../money'
+import { CURRENCIES, isCurrency, parseTicketPrice, priceInput, type Currency, type TicketPrice } from '../money'
 
 type Draft = Omit<Item, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
 
@@ -26,6 +26,7 @@ function emptyDraft(category: Category): Draft {
 export default function ItemForm() {
   const { id: tripIdParam, itemId } = useParams()
   const [params] = useSearchParams()
+  const fromBudget = params.get('from') === 'budget'
   const navigate = useNavigate()
   const initialCat = (params.get('category') as Category) in CATEGORIES ? (params.get('category') as Category) : 'other'
 
@@ -102,7 +103,7 @@ export default function ItemForm() {
     if (draft.startDate && draft.endDate && draft.endDate < draft.startDate)
       return setError(`«${cfg.end}» не может быть раньше, чем «${cfg.start}»`)
     let ticketPrice: TicketPrice | undefined
-    try { ticketPrice = hasTicketPrice(draft.category) ? parseTicketPrice(price, currency) : undefined }
+    try { ticketPrice = parseTicketPrice(price, currency) }
     catch (e) { return setError((e as Error).message) }
     setSaving(true)
     const clean: Draft = {
@@ -132,7 +133,7 @@ export default function ItemForm() {
         await db.items.add({ id: newItemId, tripId, ...clean, createdAt: now, updatedAt: now })
         if (files.length) await addAttachments('item', newItemId, files)
         await fitTripToTickets(tripId)
-        navigate(`/items/${newItemId}`, { replace: true })
+        navigate(fromBudget ? `/trips/${tripId}/budget` : `/items/${newItemId}`, { replace: true })
       }
     } catch (err) {
       setSaving(false)
@@ -143,11 +144,11 @@ export default function ItemForm() {
 
   if (!access.canEdit) return <Navigate to={itemId ? `/items/${itemId}` : `/trips/${tripId}`} replace />
   if (!loaded) return null
-  const back = itemId ? `/items/${itemId}` : `/trips/${tripId}`
+  const back = itemId ? `/items/${itemId}` : fromBudget ? `/trips/${tripId}/budget` : `/trips/${tripId}`
 
   return (
     <>
-      <PageHeader title={itemId ? 'Редактировать' : <span className="title-with-icon"><CatIcon c={draft.category} size={44} /> {cfg.one}</span>} back={back} />
+      <PageHeader title={itemId ? 'Редактировать' : fromBudget ? 'Новый расход' : <span className="title-with-icon"><CatIcon c={draft.category} size={44} /> {cfg.one}</span>} back={back} />
       <form className="form" onSubmit={onSubmit} noValidate>
         {!['visa', 'insurance', 'route'].includes(draft.category) && (
           <TicketImport onResult={(r) => applyImport(r, !!itemId)} />
@@ -156,9 +157,9 @@ export default function ItemForm() {
           <div className="import-note">Маршрут всей поездки по дням собирается сам из билетов, жилья и событий — он в разделе «Маршруты». Здесь можно добавить свой: прогулку, трек, поездку на машине.</div>
         )}
         {importNote && <div className={`import-note ${importNote.warn ? 'import-note-warn' : ''}`}>{importNote.text}</div>}
-        {itemId && (
+        {(itemId || fromBudget) && (
           <label className="field">
-            <span>Папка</span>
+            <span>{fromBudget ? 'Статья расходов' : 'Папка'}</span>
             <select value={draft.category} onChange={(e) => set('category', e.target.value as Category)}>
               {CATEGORY_ORDER.map((c) => <option key={c} value={c}>{CATEGORIES[c].label}</option>)}
             </select>
@@ -240,23 +241,21 @@ export default function ItemForm() {
           </label>
         )}
 
-        {hasTicketPrice(draft.category) && (
-          <div className="field">
-            <div className="field-row">
-              <label className="field">
-                <span>{draft.category === 'hotel' ? 'Стоимость за весь период' : 'Стоимость билета'}</span>
-                <input type="text" inputMode="decimal" value={price} onChange={(e) => { setPrice(e.target.value); setError('') }} placeholder="Например, 12500,50" aria-describedby="ticket-price-hint" />
-              </label>
-              <label className="field">
-                <span>Валюта</span>
-                <select aria-label="Валюта" value={currency} onChange={(e) => { setCurrency(e.target.value as Currency); setError('') }}>
-                  {Object.entries(CURRENCIES).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
-                </select>
-              </label>
-            </div>
-            <p id="ticket-price-hint" className="hint-text">{draft.category === 'hotel' ? 'Необязательно. Укажите общую стоимость проживания за весь период, за всех гостей.' : 'Необязательно. Если в записи несколько билетов, укажите общую стоимость за все.'}</p>
+        <div className="field">
+          <div className="field-row">
+            <label className="field">
+              <span>{draft.category === 'hotel' ? 'Стоимость за весь период' : ['flight', 'transport', 'voucher'].includes(draft.category) ? 'Стоимость билета' : 'Стоимость'}</span>
+              <input type="text" inputMode="decimal" value={price} onChange={(e) => { setPrice(e.target.value); setError('') }} placeholder="Например, 12500,50" aria-describedby="ticket-price-hint" />
+            </label>
+            <label className="field">
+              <span>Валюта</span>
+              <select aria-label="Валюта" value={currency} onChange={(e) => { setCurrency(e.target.value as Currency); setError('') }}>
+                {Object.entries(CURRENCIES).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+              </select>
+            </label>
           </div>
-        )}
+          <p id="ticket-price-hint" className="hint-text">{draft.category === 'hotel' ? 'Необязательно. Укажите общую стоимость проживания за весь период, за всех гостей.' : ['flight', 'transport', 'voucher'].includes(draft.category) ? 'Необязательно. Если в записи несколько билетов, укажите общую стоимость за все.' : 'Необязательно. Укажите общую стоимость этой записи — она войдёт в бюджет поездки.'}</p>
+        </div>
 
         <label className="field">
           <span>Ссылка</span>

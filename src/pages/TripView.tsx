@@ -157,8 +157,9 @@ export default function TripView() {
           {countdown && <span className={`hero-pill hero-pill-${tripPhase(trip)}`}><IconClock /> {countdown}</span>}
         </div>
       </header>
-      <div style={{ margin: '12px 0 16px' }}>
-        <Link to={`/trips/${trip.id}/today`} className="btn btn-soft" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', boxSizing: 'border-box' }}>☀️ Мой день — план на сегодня</Link>
+      <div className="trip-shortcuts">
+        <Link to={`/trips/${trip.id}/today`} className="btn btn-soft">☀️ Мой день — план на сегодня</Link>
+        <Link to={`/trips/${trip.id}/budget`} className="btn btn-soft">💰 Бюджет поездки</Link>
       </div>
 
       {access.shared && (

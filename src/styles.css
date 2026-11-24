@@ -710,3 +710,26 @@ h1 { font-weight: 800; letter-spacing: -0.02em; }
 /* Invitation access options use the existing mobile sheet layout. */
 .event-invite-options { border: 0; margin: 0; padding: 0; min-width: 0; }
 .event-invite-options legend { margin-bottom: 8px; font-weight: 600; }
+
+/* ---------- Бюджет поездки ---------- */
+.trip-shortcuts { display: grid; gap: 8px; margin: 12px 0 16px; }
+.budget-summary { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-bottom: 16px; }
+.budget-total { color: var(--primary); font-size: 1.65rem; font-weight: 800; margin: 12px 0; }
+.budget-amounts { display: grid; gap: 4px; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.budget-total .budget-amounts { text-align: left; }
+.budget-missing { color: var(--muted); font-size: 0.9rem; }
+.budget-add { margin-bottom: 20px; }
+.budget-category { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); margin-top: 12px; overflow: hidden; }
+.budget-category-head { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--primary-soft); }
+.budget-category-head h3 { margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.budget-category-head .budget-amounts { font-weight: 700; }
+.budget-items { list-style: none; padding: 0; margin: 0; }
+.budget-items li + li { border-top: 1px solid var(--border); }
+.budget-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px; }
+.budget-item:hover { background: var(--bg); }
+.budget-item-name { min-width: 0; overflow-wrap: anywhere; }
+.budget-item-price { text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; min-width: 0; }
+@media (min-width: 600px) { .trip-shortcuts { grid-template-columns: 1fr 1fr; } }
+.budget-item-name { flex: 1; }
+.budget-item-name .row-sub { display: block; margin-top: 4px; }
+.budget-item-price { flex: 0 0 auto; max-width: 50%; }

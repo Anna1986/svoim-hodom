@@ -1,3 +1,4 @@
+import { formatTicketPrice } from '../money'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { CATEGORIES, eventTypeOf, type Item } from '../db'
@@ -31,6 +32,7 @@ function ItemCard({ item, files, open, onToggle }: { item: Item; files: SharedFi
       {open && (
         <div className="shared-details">
           <dl className="details">
+            {formatTicketPrice(item.ticketPrice) && <><dt>Стоимость</dt><dd className="strong">{formatTicketPrice(item.ticketPrice)}</dd></>}
             {item.startDate && (<><dt>{cfg.start}</dt><dd className="strong">{formatDateTime(item.startDate, item.startTime)}</dd></>)}
             {(item.endDate || item.endTime) && cfg.end && (<><dt>{cfg.end}</dt><dd className="strong">{formatDateTime(item.endDate || item.startDate, item.endTime)}</dd></>)}
             {item.place && cfg.place && (<><dt>{cfg.place}</dt><dd>{item.place}</dd></>)}

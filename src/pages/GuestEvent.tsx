@@ -1,3 +1,4 @@
+import { formatTicketPrice } from '../money'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { fetchGuestEvent, removeEventMember } from '../eventMembers'
@@ -44,6 +45,7 @@ export default function GuestEvent() {
     <div className="kind-label"><CatIcon c={item.category} size={36} />{eventTypeOf(item)?.label ?? cfg.one}</div>
     <p className="muted small">Приглашённое событие · только просмотр</p>
     <dl className="details">
+            {formatTicketPrice(item.ticketPrice) && <><dt>Стоимость</dt><dd className="strong">{formatTicketPrice(item.ticketPrice)}</dd></>}
       {place && <><dt>{cfg.place || 'Место'}</dt><dd><a className="link" href={place.href} target="_blank" rel="noopener">{place.text}</a></dd></>}
       {item.startDate && <><dt>{cfg.start}</dt><dd>{formatDateTime(item.startDate, item.startTime)}</dd></>}
       {(item.endDate || item.endTime) && <><dt>{cfg.end}</dt><dd>{formatDateTime(item.endDate || item.startDate, item.endTime)}</dd></>}

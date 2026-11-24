@@ -18,7 +18,7 @@ const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE
 });
 
 // Поля, которые не показываем, если владелец выбрал «только план»
-const PRIVATE_ITEM_FIELDS = ["bookingRef", "link", "notes"];
+const PRIVATE_ITEM_FIELDS = ["bookingRef", "link", "notes", "ticketPrice"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -54,7 +54,10 @@ Deno.serve(async (req) => {
     const details = share.include_details;
     const items = (itemRows ?? []).map((r) => {
       const it = { ...(r.data as Record<string, unknown>) };
-      if (!details) for (const f of PRIVATE_ITEM_FIELDS) it[f] = "";
+      if (!details) for (const f of PRIVATE_ITEM_FIELDS) {
+        if (f === "ticketPrice") delete it[f];
+        else it[f] = "";
+      }
       return it;
     });
 

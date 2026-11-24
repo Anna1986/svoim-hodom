@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import type { TicketPrice } from './money'
 
 /* ---------------- Поездки ---------------- */
 
@@ -144,6 +145,7 @@ export interface Item {
   endDate: string
   endTime: string
   bookingRef: string
+  ticketPrice?: TicketPrice // общая стоимость билетов в этой записи, в минимальных единицах валюты
   eventType?: EventType // только для событий
   link: string
   notes: string

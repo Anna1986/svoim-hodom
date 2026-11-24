@@ -1,3 +1,4 @@
+import { formatTicketPrice } from '../money'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIES, CATEGORY_ORDER, db, deleteTrip, eventTypeOf, type Category, type Item } from '../db'
@@ -41,6 +42,7 @@ function ItemRow({ item, fileCount }: { item: Item; fileCount: number }) {
       <span className="row-body">
         {eventTypeOf(item) && <span className="event-label">{eventTypeOf(item)!.icon} {eventTypeOf(item)!.label}</span>}
         <span className="row-title">{item.title}</span>
+        {formatTicketPrice(item.ticketPrice) && <span className="row-sub">{formatTicketPrice(item.ticketPrice)}</span>}
         {placeLine(item) && <span className="row-sub">{placeLine(item)}</span>}
         {when && <span className="row-sub">{when}</span>}
       </span>

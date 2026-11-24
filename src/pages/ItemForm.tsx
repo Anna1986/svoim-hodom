@@ -11,6 +11,7 @@ import { fitTripToTickets } from '../trip'
 import { TicketImport, type ImportResult } from '../components/TicketImport'
 import { takePendingImport } from '../ticketImport'
 import { FIELD_NAMES, type ParsedFields } from '../ticketParse'
+import { CURRENCIES, hasTicketPrice, isCurrency, parseTicketPrice, priceInput, type Currency, type TicketPrice } from '../money'
 
 type Draft = Omit<Item, 'id' | 'tripId' | 'createdAt' | 'updatedAt'>
 
@@ -33,6 +34,8 @@ export default function ItemForm() {
   const access = useTripAccess(tripId || undefined)
   const tripOfItem = useLiveQuery(async () => (tripId ? (await db.trips.get(tripId)) ?? null : null), [tripId])
   const near = tripOfItem?.destination || ''
+  const [price, setPrice] = useState('')
+  const [currency, setCurrency] = useState<Currency>('RUB')
   const [files, setFiles] = useState<File[]>([])
   const [loaded, setLoaded] = useState(!itemId)
   const [error, setError] = useState('')
@@ -80,6 +83,8 @@ export default function ItemForm() {
       if (!it) return navigate('/trips', { replace: true })
       const { id: _i, tripId: t, createdAt: _c, updatedAt: _u, ...rest } = it
       setDraft(rest)
+      setPrice(priceInput(it.ticketPrice))
+      setCurrency(it.ticketPrice && isCurrency(it.ticketPrice.currency) ? it.ticketPrice.currency : 'RUB')
       setTripId(t)
       setLoaded(true)
     })
@@ -96,10 +101,14 @@ export default function ItemForm() {
     if (!title) return setError('Введите название')
     if (draft.startDate && draft.endDate && draft.endDate < draft.startDate)
       return setError(`«${cfg.end}» не может быть раньше, чем «${cfg.start}»`)
+    let ticketPrice: TicketPrice | undefined
+    try { ticketPrice = hasTicketPrice(draft.category) ? parseTicketPrice(price, currency) : undefined }
+    catch (e) { return setError((e as Error).message) }
     setSaving(true)
     const clean: Draft = {
       ...draft,
       title,
+      ticketPrice,
       place: cfg.place ? draft.place.trim() : '',
       placeTo: cfg.placeTo ? draft.placeTo.trim() : '',
       placeLL: cfg.place && draft.place.trim() ? draft.placeLL : undefined,
@@ -229,6 +238,24 @@ export default function ItemForm() {
             <span>{cfg.ref}</span>
             <input value={draft.bookingRef} onChange={(e) => set('bookingRef', e.target.value)} autoCapitalize="characters" />
           </label>
+        )}
+
+        {hasTicketPrice(draft.category) && (
+          <div className="field">
+            <div className="field-row">
+              <label className="field">
+                <span>Стоимость билета</span>
+                <input type="text" inputMode="decimal" value={price} onChange={(e) => { setPrice(e.target.value); setError('') }} placeholder="Например, 12500,50" aria-describedby="ticket-price-hint" />
+              </label>
+              <label className="field">
+                <span>Валюта</span>
+                <select aria-label="Валюта" value={currency} onChange={(e) => { setCurrency(e.target.value as Currency); setError('') }}>
+                  {Object.entries(CURRENCIES).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+                </select>
+              </label>
+            </div>
+            <p id="ticket-price-hint" className="hint-text">Необязательно. Если в записи несколько билетов, укажите общую стоимость за все.</p>
+          </div>
         )}
 
         <label className="field">

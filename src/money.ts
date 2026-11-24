@@ -8,7 +8,7 @@ export type Currency = keyof typeof CURRENCIES
 export interface TicketPrice { amountMinor: number; currency: Currency }
 
 export function hasTicketPrice(category: string): boolean {
-  return ['flight', 'transport', 'voucher'].includes(category)
+  return ['flight', 'transport', 'voucher', 'hotel'].includes(category)
 }
 
 export function isCurrency(value: string): value is Currency {

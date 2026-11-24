@@ -61,7 +61,7 @@ export default function ItemView() {
       <div className="kind-label"><CatIcon c={item.category} size={36} /> {eventTypeOf(item) ? `${eventTypeOf(item)!.icon} ${eventTypeOf(item)!.label}` : cfg.one}</div>
 
       <dl className="details">
-            {formatTicketPrice(item.ticketPrice) && <><dt>Стоимость</dt><dd className="strong">{formatTicketPrice(item.ticketPrice)}</dd></>}
+            {formatTicketPrice(item.ticketPrice) && <><dt>{item.category === 'hotel' ? 'Стоимость за весь период' : 'Стоимость'}</dt><dd className="strong">{formatTicketPrice(item.ticketPrice)}</dd></>}
         {item.place && cfg.place && (
           <><dt>{cfg.place}</dt><dd><a href={placeInfo(item.category, item.place, provider, item.placeLL).href} target="_blank" rel="noopener" className="link">{placeInfo(item.category, item.place, provider, item.placeLL).text}</a></dd></>
         )}

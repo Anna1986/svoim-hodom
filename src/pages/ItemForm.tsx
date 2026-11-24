@@ -244,7 +244,7 @@ export default function ItemForm() {
           <div className="field">
             <div className="field-row">
               <label className="field">
-                <span>Стоимость билета</span>
+                <span>{draft.category === 'hotel' ? 'Стоимость за весь период' : 'Стоимость билета'}</span>
                 <input type="text" inputMode="decimal" value={price} onChange={(e) => { setPrice(e.target.value); setError('') }} placeholder="Например, 12500,50" aria-describedby="ticket-price-hint" />
               </label>
               <label className="field">
@@ -254,7 +254,7 @@ export default function ItemForm() {
                 </select>
               </label>
             </div>
-            <p id="ticket-price-hint" className="hint-text">Необязательно. Если в записи несколько билетов, укажите общую стоимость за все.</p>
+            <p id="ticket-price-hint" className="hint-text">{draft.category === 'hotel' ? 'Необязательно. Укажите общую стоимость проживания за весь период, за всех гостей.' : 'Необязательно. Если в записи несколько билетов, укажите общую стоимость за все.'}</p>
           </div>
         )}
 
